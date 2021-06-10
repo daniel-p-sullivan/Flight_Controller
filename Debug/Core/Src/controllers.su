@@ -1,0 +1,3 @@
+controllers.c:10:9:PI	32	static
+controllers.c:20:6:trpy_Controller	24	static
+controllers.c:28:6:Motor_Mixing_Algorithm	24	static

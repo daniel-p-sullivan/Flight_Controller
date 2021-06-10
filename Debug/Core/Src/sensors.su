@@ -1,0 +1,6 @@
+sensors.c:13:6:Config_Sensor	24	static
+sensors.c:34:6:Read_IMU_Calib_Status	24	static
+sensors.c:64:6:Write_IMU_Calib_Params	24	static
+sensors.c:82:6:Read_Calib_Params	48	static
+sensors.c:130:12:Read_IMU	40	static
+sensors.c:167:6:I2C1_ClearBusyFlagErratum	48	static,ignoring_inline_asm
