@@ -43,6 +43,7 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Core/Src/./comms/../controllers/../sensors/bno055.hpp \
  ../Core/Src/./comms/../controllers/../sensors/sensors.hpp \
  ../Core/Src/./comms/../controllers/../state/state.hpp \
+ ../Core/Src/./comms/nrf24.hpp ../Core/Src/./comms/communications.hpp \
  ../Core/Src/./controllers/controllers.hpp \
  ../Core/Src/./sensors/sensors.hpp
 ../Core/Inc/main.h:
@@ -90,5 +91,7 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Core/Src/./comms/../controllers/../sensors/bno055.hpp:
 ../Core/Src/./comms/../controllers/../sensors/sensors.hpp:
 ../Core/Src/./comms/../controllers/../state/state.hpp:
+../Core/Src/./comms/nrf24.hpp:
+../Core/Src/./comms/communications.hpp:
 ../Core/Src/./controllers/controllers.hpp:
 ../Core/Src/./sensors/sensors.hpp:

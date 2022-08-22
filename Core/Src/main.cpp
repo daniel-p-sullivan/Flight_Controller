@@ -153,7 +153,7 @@ int main(void)
 
 
 
-	  	  		  imu = sensors::BNO055(hi2c1);
+	  	  		  sensors::BNO055 imu(hi2c1);
 	  	  		  imu_config_flag = imu.Config_Sensor();
 
 	  	  		  if(imu_config_flag){
@@ -197,7 +197,7 @@ int main(void)
 	  	  case MOTOR_INIT:
 	  	  	  {
 	  	  		  HAL_Delay(1000);
-	  	  		  motors = actuators::BLHelis(htim8);
+	  	  		  actuators::BLHelis motors(htim8);
 	  	  		  //BLHeli_Start(); ?
 	  	  		  //BLHeli_Arm(); ?
 	  	  		  sys_state = MOTOR_INIT_DONE;
@@ -212,7 +212,7 @@ int main(void)
 
 	  	  case COMMS_INIT:
 	  	  	  {
-	  	  		  comms = communications::NRF24(hspi2);
+	  	  		  communications::NRF24 comms(hspi2);
 	  	  		  sys_state = COMMS_INIT_DONE;
 	  	  	  }
 	  	  	  break;

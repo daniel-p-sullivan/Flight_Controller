@@ -11,6 +11,9 @@
 #include "../controllers/controllers.hpp"
 //#include "main.h"
 
+//drivers
+#include "nrf24.hpp"
+
 
 
 #define PAYLOAD_SIZE 32
