@@ -5,15 +5,12 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
-../Core/Src/comms/communications.cpp \
 ../Core/Src/comms/nrf24.cpp 
 
 OBJS += \
-./Core/Src/comms/communications.o \
 ./Core/Src/comms/nrf24.o 
 
 CPP_DEPS += \
-./Core/Src/comms/communications.d \
 ./Core/Src/comms/nrf24.d 
 
 
@@ -24,7 +21,7 @@ Core/Src/comms/%.o Core/Src/comms/%.su: ../Core/Src/comms/%.cpp Core/Src/comms/s
 clean: clean-Core-2f-Src-2f-comms
 
 clean-Core-2f-Src-2f-comms:
-	-$(RM) ./Core/Src/comms/communications.d ./Core/Src/comms/communications.o ./Core/Src/comms/communications.su ./Core/Src/comms/nrf24.d ./Core/Src/comms/nrf24.o ./Core/Src/comms/nrf24.su
+	-$(RM) ./Core/Src/comms/nrf24.d ./Core/Src/comms/nrf24.o ./Core/Src/comms/nrf24.su
 
 .PHONY: clean-Core-2f-Src-2f-comms
 

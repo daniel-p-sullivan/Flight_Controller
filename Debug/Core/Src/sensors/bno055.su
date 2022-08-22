@@ -1,9 +1,9 @@
-../Core/Src/sensors/sensors.hpp:25:7:constexpr IMU::IMU()	16	static
-../Core/Src/sensors/bno055.cpp:10:1:BNO055::BNO055(I2C_HandleTypeDef)	16	static
-../Core/Src/sensors/bno055.cpp:14:6:virtual bool BNO055::Config_Sensor()	32	static
-../Core/Src/sensors/bno055.cpp:35:6:virtual bool BNO055::Read_IMU_Calib_Status()	32	static
-../Core/Src/sensors/bno055.cpp:65:6:virtual bool BNO055::Write_IMU_Calib_Params()	32	static
-../Core/Src/sensors/bno055.cpp:83:6:virtual bool BNO055::Read_Calib_Params()	56	static
-../Core/Src/sensors/bno055.cpp:131:13:virtual IMU_Sample* BNO055::Read_IMU()	32	static
-../Core/Src/sensors/bno055.cpp:166:6:virtual void BNO055::Update_IMU_Sample(IMU_Sample*)	32	static
-../Core/Src/sensors/bno055.cpp:200:6:virtual void BNO055::I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef*)	48	static,ignoring_inline_asm
+../Core/Src/sensors/sensors.hpp:24:7:constexpr sensors::IMU::IMU()	16	static
+../Core/Src/sensors/bno055.cpp:12:1:sensors::BNO055::BNO055(I2C_HandleTypeDef)	16	static
+../Core/Src/sensors/bno055.cpp:16:6:virtual bool sensors::BNO055::Config_Sensor()	40	static
+../Core/Src/sensors/bno055.cpp:37:6:virtual bool sensors::BNO055::Read_IMU_Calib_Status()	32	static
+../Core/Src/sensors/bno055.cpp:68:6:virtual bool sensors::BNO055::Write_IMU_Calib_Params()	32	static
+../Core/Src/sensors/bno055.cpp:87:6:virtual bool sensors::BNO055::Read_Calib_Params()	56	static
+../Core/Src/sensors/bno055.cpp:137:13:virtual sensors::IMU_Sample* sensors::BNO055::Read_IMU()	32	static
+../Core/Src/sensors/bno055.cpp:172:6:virtual void sensors::BNO055::Update_IMU_Sample(sensors::IMU_Sample*)	32	static
+../Core/Src/sensors/bno055.cpp:206:6:virtual void sensors::BNO055::I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef*)	48	static,ignoring_inline_asm

@@ -10,17 +10,16 @@
 
 #include "main.h"
 #include "stm32f4xx_hal.h"
+#include "bno055.hpp"
 
 #include <stdbool.h>
-#include <stdint.h>
+#include <cstdint>
 
-
+namespace sensors{
 typedef struct {
 	int16_t a_x, a_y, a_z, g_x, g_y, g_z;
 } IMU_Sample;
 
-extern I2C_HandleTypeDef hi2c1;
-static HAL_StatusTypeDef hal_status;
 
 class IMU{
 public:
@@ -33,6 +32,7 @@ public:
 private:
 	virtual void I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef *instance);
 };
+}
 
 
 

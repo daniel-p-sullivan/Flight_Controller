@@ -20,13 +20,13 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
-#include "actuators.hpp"
+#include "./actuators/actuators.hpp"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-#include "communications.hpp"
-#include "controllers.hpp"
-#include "sensors.hpp"
+#include "./comms/communications.hpp"
+#include "./controllers/controllers.hpp"
+#include "./sensors/sensors.hpp"
 
 /* USER CODE END Includes */
 
@@ -139,7 +139,10 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 
-
+	  //required devices
+	  sensors::IMU imu;
+	  actuators::Motors motors;
+	  communications::Communicator comms;
 
 	  switch(sys_state){
 
@@ -148,7 +151,10 @@ int main(void)
 	  	  		  //time buffer to allow BNO055 to self test?
 	  	  		  HAL_Delay(10);
 
-	  	  		  imu_config_flag = Config_Sensor();
+
+
+	  	  		  imu = sensors::BNO055(hi2c1);
+	  	  		  imu_config_flag = imu.Config_Sensor();
 
 	  	  		  if(imu_config_flag){
 	  	  			  sys_state = IMU_CALIB_INIT;
@@ -159,8 +165,8 @@ int main(void)
 	  	  case IMU_CALIB_INIT:
 	  	  	  {
 			  	  //CODE FOR CALIBRATING THE SENSOR
-	  		  	  imu_calib_flag = Read_IMU_Calib_Status();
-	  		  	  bool test = Read_Calib_Params();
+	  		  	  imu_calib_flag = imu.Read_IMU_Calib_Status();
+	  		  	  bool test = imu.Read_Calib_Params();
 	  		  	  if(imu_calib_flag){
 
 	  			  	  sys_state = IMU_CALIB_DONE;
@@ -191,9 +197,9 @@ int main(void)
 	  	  case MOTOR_INIT:
 	  	  	  {
 	  	  		  HAL_Delay(1000);
-	  	  		  Init_Motor_PWM();
-	  	  		  BLHeli_Start();
-	  	  		  BLHeli_Arm();
+	  	  		  motors = actuators::BLHelis(htim8);
+	  	  		  //BLHeli_Start(); ?
+	  	  		  //BLHeli_Arm(); ?
 	  	  		  sys_state = MOTOR_INIT_DONE;
 	  	  	  }
 	  		  break;
@@ -206,7 +212,7 @@ int main(void)
 
 	  	  case COMMS_INIT:
 	  	  	  {
-	  	  		  Communications_Init();
+	  	  		  comms = communications::NRF24(hspi2);
 	  	  		  sys_state = COMMS_INIT_DONE;
 	  	  	  }
 	  	  	  break;
@@ -214,28 +220,28 @@ int main(void)
 
 	  	  case COMMS_INIT_DONE:
 	  	  	  {
-	  	  		  NRF24_Enable_Receive();
+	  	  		  comms.Enable_Receive();
 	  	  		  uint8_t fifo_status, status, config, rf_setup, rf_ch = 0xff;
 	  	  		  uint8_t rx_addr[5] = {0xff, 0xff, 0xff, 0xff, 0xff};
-	  	  		  NRF24_Clear_FIFO_Interrupt();
-	  	  		  NRF24_Read_Register(FIFO_STATUS, &fifo_status);
-	  	  		  NRF24_Read_Register(STATUS, &status);
-	  	  		  NRF24_Read_Register(CONFIG, &config);
-	  	  		  NRF24_Read_Register(RF_SETUP, &rf_setup);
-	  	  		  NRF24_Read_Register(RF_CH, &rf_ch);
+	  	  		  comms.Clear_FIFO_Interrupt();
+	  	  		  comms.Read_Register(FIFO_STATUS, &fifo_status);
+	  	  		  comms.Read_Register(STATUS, &status);
+	  	  		  comms.Read_Register(CONFIG, &config);
+	  	  		  comms.Read_Register(RF_SETUP, &rf_setup);
+	  	  		  comms.Read_Register(RF_CH, &rf_ch);
 
 
 	  	  		  while(1){
-	  	  			  NRF24_Read_Register(FIFO_STATUS, &fifo_status);
-	  	  			  NRF24_Read_Register(STATUS, &status);
-	  	  			  NRF24_Read_Register(CONFIG, &config);
-	  	  			  NRF24_Read_Register(RF_SETUP, &rf_setup);
-	  	  			  NRF24_Read_Register(RF_CH, &rf_ch);
-	  	  			  NRF24_Flush_RX();
-	  	  			  NRF24_Enable_Receive();
+	  	  			  comms.Read_Register(FIFO_STATUS, &fifo_status);
+	  	  			  comms.Read_Register(STATUS, &status);
+	  	  			  comms.Read_Register(CONFIG, &config);
+	  	  			  comms.Read_Register(RF_SETUP, &rf_setup);
+	  	  			  comms.Read_Register(RF_CH, &rf_ch);
+	  	  			  comms.Flush_RX();
+	  	  			  comms.Enable_Receive();
 	  	  			  HAL_Delay(100);
-	  	  			  if(NRF24_Payload_Available()){
-	  	  				  NRF24_Read_Payload();
+	  	  			  if(comms.Payload_Available()){
+	  	  				  comms.Read_Payload();
 	  	  			  }
 	  	  		  }
 

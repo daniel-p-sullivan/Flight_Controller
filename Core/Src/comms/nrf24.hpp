@@ -53,7 +53,6 @@ public:
 	NRF24(SPI_HandleTypeDef spi);
 	int send(communications::comm_packet& msg);
 	int recv(communications::comm_packet& msg);
-private:
 
 	//spi handle
 	SPI_HandleTypeDef* spi;

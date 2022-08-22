@@ -84,7 +84,7 @@ void NRF24::Read_Register(uint8_t register_address, uint8_t* data){
 	//bring CSN low to select the comms
 	this->Begin_SPI();
 
-	hal_status = HAL_SPI_Transmit(this->spi, &command, 1, (uint32_t)10);
+	HAL_StatusTypeDef hal_status = HAL_SPI_Transmit(this->spi, &command, 1, (uint32_t)10);
 	hal_status = HAL_SPI_Receive(this->spi, data, 1, (uint32_t)10);
 
 	//deselect the comms by setting CSN high
@@ -100,7 +100,7 @@ void NRF24::Write_Register(uint8_t register_address, uint8_t* data){
 	//bring CSN low to select the comms
 	this->Begin_SPI();
 
-	hal_status = HAL_SPI_Transmit(this->spi, &command, 1, (uint32_t)10);
+	HAL_StatusTypeDef hal_status = HAL_SPI_Transmit(this->spi, &command, 1, (uint32_t)10);
 	hal_status = HAL_SPI_Transmit(this->spi, data, 1, (uint32_t)10);
 
 	//deselect the comms by setting CSN high
@@ -117,7 +117,7 @@ void NRF24::Read_MB_Register(uint8_t register_address, uint8_t* buf, uint8_t len
 	//bring CSN low to select the comms
 	this->Begin_SPI();
 
-	hal_status = HAL_SPI_Transmit(this->spi, &command, 1, (uint32_t)10);
+	HAL_StatusTypeDef hal_status = HAL_SPI_Transmit(this->spi, &command, 1, (uint32_t)10);
 	while(len--){
 		hal_status = HAL_SPI_Receive(this->spi, buf++, 1, (uint32_t)10);
 	}
@@ -138,7 +138,7 @@ void NRF24::Write_MB_Register(uint8_t register_address, uint8_t* data, uint8_t l
 	//bring CSN low to select the comms
 	this->Begin_SPI();
 
-	hal_status = HAL_SPI_Transmit(this->spi, &command, 1, (uint32_t)10);
+	HAL_StatusTypeDef hal_status = HAL_SPI_Transmit(this->spi, &command, 1, (uint32_t)10);
 	while(len--){
 		hal_status = HAL_SPI_Transmit(this->spi, data++, 1, (uint32_t)10);
 	}
@@ -159,7 +159,7 @@ void NRF24::Read_Payload(void){
 	this->Begin_SPI();
 
 
-	hal_status = HAL_SPI_TransmitReceive(this->spi, payload_tx_buf, payload_data_buf, PAYLOAD_SIZE+1, (uint32_t)1000);
+	HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive(this->spi, payload_tx_buf, payload_data_buf, PAYLOAD_SIZE+1, (uint32_t)1000);
 //	hal_status = HAL_SPI_Transmit(this->spi, &this->R_RX_PAYLOAD, 1, (uint32_t)10);
 //	for(int i = 0; i < PAYLOAD_SIZE+1; i++){
 //		hal_status = HAL_SPI_Receive(this->spi, &data[i], 1, (uint32_t)10);

@@ -7,6 +7,8 @@
 
 #include "bno055.hpp"
 
+namespace sensors{
+
 BNO055::BNO055(I2C_HandleTypeDef hi2c1){
 	this->i2c = hi2c1;
 }
@@ -15,7 +17,7 @@ bool BNO055::Config_Sensor(void){
 
 	static uint8_t op_mode = IMU_OP_MODE;
 
-	hal_status = HAL_I2C_Mem_Write(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_CONFIG_R, I2C_MEMADD_SIZE_8BIT, &op_mode, I2C_MEMADD_SIZE_8BIT, (uint32_t)1000);
+	HAL_StatusTypeDef hal_status = HAL_I2C_Mem_Write(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_CONFIG_R, I2C_MEMADD_SIZE_8BIT, &op_mode, I2C_MEMADD_SIZE_8BIT, (uint32_t)1000);
 
 
 	if(hal_status == HAL_BUSY){
@@ -37,6 +39,7 @@ bool BNO055::Read_IMU_Calib_Status(void){
 	static uint16_t calib_stat_address = 0x35;
 	static uint8_t IMU_full_calib = 0x3C;
 	static uint8_t calib;
+	static HAL_StatusTypeDef hal_status;
 
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_CALIB_STAT_R, I2C_MEMADD_SIZE_8BIT, &calib, I2C_MEMADD_SIZE_8BIT, (uint32_t)1000000);
 
@@ -66,6 +69,7 @@ bool BNO055::Write_IMU_Calib_Params(void){
 	//no calib needed in 9DOF mode?
 	static uint8_t accel_calib_params[6] = {0, 0, 0, 0, 0, 0};
 	static uint8_t gyro_calib_params[6] = {0, 0, 0, 0, 0, 0};
+	static HAL_StatusTypeDef hal_status;
 
 	hal_status = HAL_I2C_Mem_Write(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_CALIB_R, I2C_MEMADD_SIZE_8BIT * 6, accel_calib_params, I2C_MEMADD_SIZE_8BIT * 6, (uint32_t)1000);
 	hal_status = HAL_I2C_Mem_Write(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_CALIB_R, I2C_MEMADD_SIZE_8BIT * 6, gyro_calib_params, I2C_MEMADD_SIZE_8BIT * 6, (uint32_t)1000);
@@ -87,6 +91,8 @@ bool BNO055::Read_Calib_Params(void){
 	//offsets
 	static uint8_t axo_lsb, axo_msb, ayo_lsb, ayo_msb, azo_lsb, azo_msb;
 	static uint8_t gxo_lsb, gxo_msb, gyo_lsb, gyo_msb, gzo_lsb, gzo_msb;
+	static HAL_StatusTypeDef hal_status;
+
 
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_OFFSET_X_LSB_R, I2C_MEMADD_SIZE_8BIT, &axo_lsb, I2C_MEMADD_SIZE_8BIT, (uint32_t)25);
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_OFFSET_X_MSB_R, I2C_MEMADD_SIZE_8BIT, &axo_msb, I2C_MEMADD_SIZE_8BIT, (uint32_t)25);
@@ -316,4 +322,4 @@ void BNO055::I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef *instance)
     // Call initialization function.
     HAL_I2C_Init(instance);
 }
-
+}

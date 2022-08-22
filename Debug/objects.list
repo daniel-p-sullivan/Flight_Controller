@@ -1,5 +1,4 @@
 "./Core/Src/actuators/blhelis.o"
-"./Core/Src/comms/communications.o"
 "./Core/Src/comms/nrf24.o"
 "./Core/Src/controllers/controllers.o"
 "./Core/Src/main.o"

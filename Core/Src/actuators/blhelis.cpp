@@ -8,6 +8,12 @@
 
 #include "blhelis.hpp"
 
+namespace actuators{
+
+BLHelis::BLHelis(TIM_HandleTypeDef htim8){
+	this->timer = &htim8;
+	this->Init_Motors();
+}
 
 void BLHelis::Init_Motors(void){
 	HAL_TIM_Base_Start(this->timer);
@@ -65,7 +71,7 @@ void BLHelis::Actuate_Motor_4(void){
 	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_4, MOTOR_IDLE);
 }
 
-void BLHelis::BLHeli_Start(void){
+void BLHelis::Start(void){
 	static uint16_t mc = MOTOR_1MS;
 	motor_sp msp = {mc, mc, mc, mc};
 	this->Update_Motor_SP(msp);
@@ -73,7 +79,7 @@ void BLHelis::BLHeli_Start(void){
 
 }
 
-void BLHelis::BLHeli_Set_Thrust_Percent(float *percent){
+void BLHelis::Set_Thrust_Percent(float *percent){
 	uint16_t mc = MOTOR_1MS + (int)((MOTOR_2MS - MOTOR_1MS) * *percent);
 	motor_sp msp;
 	msp.m1_sp = mc;
@@ -82,4 +88,5 @@ void BLHelis::BLHeli_Set_Thrust_Percent(float *percent){
 	msp.m4_sp = mc;
 
 	this->Update_Motor_SP(msp);
+}
 }

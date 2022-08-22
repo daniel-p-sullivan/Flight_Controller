@@ -70,6 +70,8 @@
 #define ACC_SCALE 100 //100 LSB = 1 m/s^2
 #define GYR_SCALE 16 //16 LSB = 1 deg/s
 
+namespace sensors{
+
 class BNO055 : IMU{
 public:
 	BNO055(I2C_HandleTypeDef hi2c1);
@@ -84,5 +86,6 @@ private:
 	void I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef *instance);
 };
 
+}
 
 #endif

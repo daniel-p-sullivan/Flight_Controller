@@ -11,6 +11,11 @@
 #include "main.h"
 #include "stm32f4xx_hal.h"
 
+//drivers
+#include "blhelis.hpp"
+
+namespace actuators{
+
 typedef struct motor_sp{
 	uint16_t m1_sp;
 	uint16_t m2_sp;
@@ -20,9 +25,9 @@ typedef struct motor_sp{
 
 class Motors{
 public:
-	virtual void Init_Motors(void);
 	virtual void Update_Motor_SP(motor_sp& setpoint);
 };
+}
 
 
 #endif /* SRC_ACTUATORS_HPP_ */

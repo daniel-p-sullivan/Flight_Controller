@@ -17,19 +17,23 @@
 #define MOTOR_15MS 4846
 #define MOTOR_13MS 4200
 
+namespace actuators{
+
 class BLHelis : Motors{
 public:
 	BLHelis(TIM_HandleTypeDef htim8);
-	void Init_Motors(void);
 	void Update_Motor_SP(motor_sp& setpoint);
 private:
 	TIM_HandleTypeDef* timer;
-	void BLHeli_Start(void);
-	void BLHeli_Set_Thrust_Percent(float *percent);
+	void Init_Motors(void);
+	void Start(void);
+	void Set_Thrust_Percent(float *percent);
 	void Actuate_Motor_1(void);
 	void Actuate_Motor_2(void);
 	void Actuate_Motor_3(void);
 	void Actuate_Motor_4(void);
 };
+
+}
 
 #endif
