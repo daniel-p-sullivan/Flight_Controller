@@ -11,25 +11,29 @@
 
 namespace state{
 
-typedef struct trpy_state{
+struct RpyState{
 	float roll;
 	float pitch;
 	float yaw;
-	float thrust;
-} trpy_state;
+	float z;
+};
 
-typedef struct xyz_state{
+struct XyzState{
 	float x;
 	float y;
 	float z;
 	float dx;
 	float dy;
 	float dz;
-} xyz_state;
+};
 
-typedef xyz_state xyz_setpoint;
-typedef trpy_state trpy_setpoint;
-class setpoint : xyz_setpoint, trpy_setpoint{};
+typedef XyzState XyzSetpoint;
+typedef XyzState XyzError;
+typedef RpyState RpySetpoint;
+typedef RpyState RpyError;
+class State : XyzState, RpyState{};
+class Setpoint : XyzSetpoint, RpySetpoint{};
+
 
 }
 
