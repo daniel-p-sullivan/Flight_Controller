@@ -6,6 +6,7 @@
  */
 
 #include "bno055.hpp"
+#include "../state/state.hpp"
 
 namespace sensors{
 
@@ -134,13 +135,13 @@ bool BNO055::Read_Calib_Params(void){
 
 }
 
-IMU_Sample* BNO055::Read_IMU(void){
+state::QuadStateVector& BNO055::readIMU(void){
 
 	//addresses for accel
 	static uint8_t ax_lsb, ax_msb, ay_lsb, ay_msb, az_lsb, az_msb;
 	static uint8_t gx_lsb, gx_msb, gy_lsb, gy_msb, gz_lsb, gz_msb;
 
-	static IMU_Sample* sample_i;
+	static state::QuadStateVector sample_i = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 	static HAL_StatusTypeDef hal_status;
 
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_X_LSB_R, 1, &ax_lsb, 1, 25);
@@ -157,49 +158,49 @@ IMU_Sample* BNO055::Read_IMU(void){
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Z_LSB_R, 1, &gz_lsb, 1, 25);
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Z_MSB_R, 1, &gz_msb, 1, 25);
 
-	sample_i->a_x = ((ax_msb << 8) | ax_lsb);
-	sample_i->a_y = ((ay_msb << 8) | ay_lsb);
-	sample_i->a_z = ((az_msb << 8) | az_lsb);
+	sample_i.dx = ((ax_msb << 8) | ax_lsb);
+	sample_i.dy = ((ay_msb << 8) | ay_lsb);
+	sample_i.dz = ((az_msb << 8) | az_lsb);
 
-	sample_i->g_x = ((gx_msb << 8) | gx_lsb);
-	sample_i->g_y = ((gy_msb << 8) | gy_lsb);
-	sample_i->g_z = ((gz_msb << 8) | gz_lsb);
+	sample_i.dpsi = ((gx_msb << 8) | gx_lsb);
+	sample_i.dtheta = ((gy_msb << 8) | gy_lsb);
+	sample_i.dphi = ((gz_msb << 8) | gz_lsb);
 
 	return sample_i;
 
 }
 
-void BNO055::Update_IMU_Sample(IMU_Sample* sample){
-
-	//addresses for accel
-	static uint8_t ax_lsb, ax_msb, ay_lsb, ay_msb, az_lsb, az_msb;
-	static uint8_t gx_lsb, gx_msb, gy_lsb, gy_msb, gz_lsb, gz_msb;
-
-	static HAL_StatusTypeDef hal_status;
-
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_X_LSB_R, 1, &ax_lsb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_X_MSB_R, 1, &ax_msb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Y_LSB_R, 1, &ay_lsb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Y_MSB_R, 1, &ay_msb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Z_LSB_R, 1, &az_lsb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Z_MSB_R, 1, &az_msb, 1, 25);
-
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_X_LSB_R, 1, &gx_lsb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_X_MSB_R, 1, &gx_msb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Y_LSB_R, 1, &gy_lsb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Y_MSB_R, 1, &gy_msb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Z_LSB_R, 1, &gz_lsb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Z_MSB_R, 1, &gz_msb, 1, 25);
-
-	sample->a_x = ((ax_msb << 8) | ax_lsb);
-	sample->a_y = ((ay_msb << 8) | ay_lsb);
-	sample->a_z = ((az_msb << 8) | az_lsb);
-
-	sample->g_x = ((gx_msb << 8) | gx_lsb);
-	sample->g_y = ((gy_msb << 8) | gy_lsb);
-	sample->g_z = ((gz_msb << 8) | gz_lsb);
-
-}
+//void BNO055::Update_IMU_Sample(IMU_Sample* sample){
+//
+//	//addresses for accel
+//	static uint8_t ax_lsb, ax_msb, ay_lsb, ay_msb, az_lsb, az_msb;
+//	static uint8_t gx_lsb, gx_msb, gy_lsb, gy_msb, gz_lsb, gz_msb;
+//
+//	static HAL_StatusTypeDef hal_status;
+//
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_X_LSB_R, 1, &ax_lsb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_X_MSB_R, 1, &ax_msb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Y_LSB_R, 1, &ay_lsb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Y_MSB_R, 1, &ay_msb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Z_LSB_R, 1, &az_lsb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Z_MSB_R, 1, &az_msb, 1, 25);
+//
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_X_LSB_R, 1, &gx_lsb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_X_MSB_R, 1, &gx_msb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Y_LSB_R, 1, &gy_lsb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Y_MSB_R, 1, &gy_msb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Z_LSB_R, 1, &gz_lsb, 1, 25);
+//	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_GYR_DATA_Z_MSB_R, 1, &gz_msb, 1, 25);
+//
+//	sample->a_x = ((ax_msb << 8) | ax_lsb);
+//	sample->a_y = ((ay_msb << 8) | ay_lsb);
+//	sample->a_z = ((az_msb << 8) | az_lsb);
+//
+//	sample->g_x = ((gx_msb << 8) | gx_lsb);
+//	sample->g_y = ((gy_msb << 8) | gy_lsb);
+//	sample->g_z = ((gz_msb << 8) | gz_lsb);
+//
+//}
 
 
 //FROM https://electronics.stackexchange.com/questions/351972/hal-i2c-hangs-cannot-be-solved-with-standard-routine-use-to-unlock-i2c/351977
