@@ -20,6 +20,8 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 #include "./actuators/actuators.hpp"
 /* Private includes ----------------------------------------------------------*/
@@ -147,7 +149,7 @@ int main(void)
     /* USER CODE BEGIN 3 */
 
 	  //required devices
-	  sensors::IMU imu;
+	  sensors::BNO055 imu(hi2c1);
 	  actuators::Motors motors;
 	  communications::Communicator comms;
 
@@ -174,8 +176,7 @@ int main(void)
 
 
 
-	  	  		  sensors::BNO055 imu(hi2c1);
-	  	  		  imu_config_flag = imu.Config_Sensor();
+	  	  		  imu_config_flag = imu.configSensor();
 	  	  		  sensorArgs.imu = imu;
 
 	  	  		  if(imu_config_flag){
@@ -235,7 +236,7 @@ int main(void)
 
 	  	  case COMMS_INIT:
 	  	  	  {
-	  	  		  communications::NRF24 comms(hspi2);
+	  	  		  //communications::NRF24 comms(hspi2);
 	  	  		  sys_state = COMMS_INIT_DONE;
 	  	  	  }
 	  	  	  break;
@@ -293,24 +294,26 @@ int main(void)
 	  	  		  TaskHandle_t xActuatorThreadHandle;
 	  	  		  TaskHandle_t xControllerThreadHandle;
 
+	  	  		  BaseType_t xRet;
+
 	  	  		  xRet = xTaskCreate(threads::sensorThread,
 	  	  			  	  			"sensorThread",
 	  	  							256,
-	  	  							(void*)sensorArgs,
+	  	  							(void*)&sensorArgs,
 	  	  							configMAX_PRIORITIES-1,
 	  	  							&xSensorThreadHandle);
 
 	  	  		  xRet = xTaskCreate(threads::controllerThread,
 	  	  				  	  	  	  "controllerThread",
 									  256,
-									  (void*)controllerArgs,
+									  (void*)&controllerArgs,
 									  configMAX_PRIORITIES-1,
 									  &xControllerThreadHandle);
 
 	  	  		 xRet = xTaskCreate(threads::actuatorThread,
 	  	  							"actuatorThread",
 									256,
-	  	  							(void*)actuatorArgs,
+	  	  							(void*)&actuatorArgs,
 									configMAX_PRIORITIES-1,
 	  	  							&xActuatorThreadHandle);
 
@@ -359,7 +362,7 @@ int main(void)
 	  }
   }
   /* USER CODE END 3 */
-}
+
 
 /**
   * @brief System Clock Configuration
@@ -691,7 +694,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, NRF24_CE_Pin|NRF24_CSN_Pin, GPIO_PIN_RESET);
+//  HAL_GPIO_WritePin(GPIOB, NRF24_CE_Pin|NRF24_CSN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -713,7 +716,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(NRF24_RX_DR_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : NRF24_CE_Pin NRF24_CSN_Pin */
-  GPIO_InitStruct.Pin = NRF24_CE_Pin|NRF24_CSN_Pin;
+//  GPIO_InitStruct.Pin = NRF24_CE_Pin|NRF24_CSN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
