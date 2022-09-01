@@ -273,6 +273,9 @@ int main(void)
 
 	  	  case RTOS:
 	  	  	  {
+
+	  	  		  osKernelInitialize();
+
 	  	  		  //create the mutexes
 	  	  		  SemaphoreHandle_t xSharedStateMutex = xSemaphoreCreateBinary();
 	  	  		  SemaphoreHandle_t xSharedOutputMutex = xSemaphoreCreateBinary();
@@ -311,7 +314,7 @@ int main(void)
 									configMAX_PRIORITIES-1,
 	  	  							&xActuatorThreadHandle);
 
-	  	  		  osKernelInitialize();
+	  	  		  vTaskStartScheduler();
 
 
 
