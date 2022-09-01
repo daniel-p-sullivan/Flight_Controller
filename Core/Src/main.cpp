@@ -275,7 +275,7 @@ int main(void)
 	  	  case RTOS:
 	  	  	  {
 
-	  	  		  osKernelInitialize();
+	  	  		  //osKernelInitialize();
 
 	  	  		  //create the mutexes
 	  	  		  SemaphoreHandle_t xSharedStateMutex = xSemaphoreCreateBinary();

@@ -35,8 +35,8 @@ struct comm_packet{
 
 class Communicator{
 public:
-	virtual int send(comm_packet& msg);
-	virtual int recv(comm_packet& msg);
+	int send(comm_packet& msg);
+	int recv(comm_packet& msg);
 };
 
 
