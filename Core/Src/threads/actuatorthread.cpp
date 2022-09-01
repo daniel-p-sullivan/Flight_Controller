@@ -7,7 +7,7 @@
 
 #include "../actuators/actuators.hpp"
 #include "../state/state.hpp"
-
+#include "../actuators/blhelis.hpp"
 
 namespace threads{
 
@@ -24,7 +24,7 @@ void actuatorThread(state::QuadControlActions& output, TIM_HandleTypeDef tim, ac
 		myOutput = output; //copy the output into local var then release
 		//unlock(output)
 
-		motors.acuateMotors(myOutput);
+		motors.actuateMotors(myOutput);
 	}
 
 }

@@ -36,11 +36,9 @@ Core/Src/comms/nrf24.o: ../Core/Src/comms/nrf24.cpp \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Core/Src/comms/../controllers/../actuators/blhelis.hpp \
- ../Core/Src/comms/../controllers/../actuators/actuators.hpp \
+ ../Core/Src/comms/../controllers/../actuators/../state/state.hpp \
  ../Core/Src/comms/../controllers/../sensors/sensors.hpp \
- ../Core/Src/comms/../controllers/../sensors/bno055.hpp \
- ../Core/Src/comms/../controllers/../sensors/sensors.hpp \
+ ../Core/Src/comms/../controllers/../sensors/../state/state.hpp \
  ../Core/Src/comms/../controllers/../state/state.hpp \
  ../Core/Src/comms/esp01.hpp
 ../Core/Src/comms/nrf24.hpp:
@@ -82,10 +80,8 @@ Core/Src/comms/nrf24.o: ../Core/Src/comms/nrf24.cpp \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
-../Core/Src/comms/../controllers/../actuators/blhelis.hpp:
-../Core/Src/comms/../controllers/../actuators/actuators.hpp:
+../Core/Src/comms/../controllers/../actuators/../state/state.hpp:
 ../Core/Src/comms/../controllers/../sensors/sensors.hpp:
-../Core/Src/comms/../controllers/../sensors/bno055.hpp:
-../Core/Src/comms/../controllers/../sensors/sensors.hpp:
+../Core/Src/comms/../controllers/../sensors/../state/state.hpp:
 ../Core/Src/comms/../controllers/../state/state.hpp:
 ../Core/Src/comms/esp01.hpp:

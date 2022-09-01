@@ -1,0 +1,1 @@
+../Core/Src/threads/actuatorthread.cpp:14:6:void threads::actuatorThread(state::QuadControlActions&, TIM_HandleTypeDef, actuators::BLHelis)	40	static

@@ -9,6 +9,7 @@
 #define SRC_MODEL_MODELS_HPP_
 
 #include "../state/state.hpp"
+#include <vector>
 
 namespace models{
 
@@ -32,9 +33,8 @@ private:
 	//explicit 12 dof state vars
 	state::QuadStateVector currState;
 	state::QuadStateDerivVector currStateDeriv;
-	state::Setpoint currSetpoint;
-	vector<state::State> currState;
-	vector<state::Actions> currActions;
+//	state::Setpoint currSetpoint;
+	std::vector<state::QuadControlActions> currActions;
 };
 
 

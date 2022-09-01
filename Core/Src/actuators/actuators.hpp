@@ -13,7 +13,6 @@
 #include "../state/state.hpp"
 
 //drivers
-#include "blhelis.hpp"
 
 namespace actuators{
 
@@ -26,7 +25,7 @@ typedef struct motor_sp{
 
 class Motors{
 public:
-	virtual void actuateMotors(state::QuadControlActions ac);
+	virtual void actuateMotors(state::QuadControlActions& ac);
 };
 }
 

@@ -1,0 +1,1 @@
+../Core/Src/threads/sensorthread.cpp:16:6:void threads::sensorThread(state::QuadStateVector&, sensors::BNO055)	72	static

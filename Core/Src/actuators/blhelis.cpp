@@ -51,7 +51,7 @@ void BLHelis::Init_Motors(void){
 	HAL_Delay(2000);
 }
 
-void BLHelis::actuateMotors(state::QuadControlActions ac){
+void BLHelis::actuateMotors(state::QuadControlActions& ac){
 
 	static uint16_t m1_sp, m2_sp, m3_sp, m4_sp;
 
@@ -88,6 +88,13 @@ void BLHelis::Start(void){
 	this->Update_Motor_SP(msp);
 	HAL_Delay(2000);
 
+}
+
+void BLHelis::Update_Motor_SP(motor_sp msp){
+	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_1, msp.m1_sp);
+	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_2, msp.m2_sp);
+	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_3, msp.m3_sp);
+	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_4, msp.m4_sp);
 }
 
 void BLHelis::Set_Thrust_Percent(float *percent){

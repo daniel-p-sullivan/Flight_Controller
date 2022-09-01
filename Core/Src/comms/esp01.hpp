@@ -13,16 +13,16 @@
 namespace communications{
 
 
-class ESP01 : Communicator{
-public:
-	ESP01(SPI_HandleTypeDef spi);
-	int send(communications::comm_packet& msg);
-	int recv(communications::comm_packet& msg);
-private:
-	SPI_HandleTypeDef* spi;
-
-
-}
+//class ESP01 : Communicator{
+//public:
+//	ESP01(SPI_HandleTypeDef spi);
+//	int send(communications::comm_packet& msg);
+//	int recv(communications::comm_packet& msg);
+//private:
+//	SPI_HandleTypeDef* spi;
+//
+//
+//};
 
 }
 

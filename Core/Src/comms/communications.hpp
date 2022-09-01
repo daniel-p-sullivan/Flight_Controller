@@ -28,10 +28,10 @@ typedef enum command{
 	setpoint = 1,
 } command;
 
-typedef struct comm_packet{
+struct comm_packet{
 	command cmd;
 	char payload[PAYLOAD_SIZE-1];
-} comm_packet;
+};
 
 class Communicator{
 public:

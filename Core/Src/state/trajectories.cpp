@@ -5,16 +5,18 @@
  *      Author: danie
  */
 
+#include <vector>
+#include "state.hpp"
 
 namespace state{
 
 class Trajectory{
 public:
-	vector<state> get_trajectory(){
+	std::vector<state::QuadStateVector> get_trajectory(){
 		return this->traj;
 	}
 private:
-	vector<state> traj;
+	std::vector<state::QuadStateVector> traj;
 };
 
 

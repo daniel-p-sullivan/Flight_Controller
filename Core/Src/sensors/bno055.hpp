@@ -14,6 +14,7 @@
 #include <stdint.h>
 
 #include "sensors.hpp"
+#include "../state/state.hpp"
 
 //pin/port defines
 #define I2C1_SCL_PORT GPIOB
@@ -79,7 +80,7 @@ public:
 	bool Read_IMU_Calib_Status(void);
 	bool Write_IMU_Calib_Params(void);
 	bool Read_Calib_Params(void);
-	state::QuadStateVector readIMU(void);
+	state::QuadStateVector& readIMU(void);
 private:
 	I2C_HandleTypeDef i2c;
 	void I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef *instance);

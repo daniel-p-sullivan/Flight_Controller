@@ -19,6 +19,11 @@ class PI{
 public:
 	PI(float sp, float dt, float Kp, float Ki);
 	float calcOutput(float stateEstimate);
+private:
+	float setpoint;
+	float dt;
+	float Kp;
+	float Ki;
 };
 
 

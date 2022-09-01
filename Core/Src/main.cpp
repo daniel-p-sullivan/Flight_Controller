@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "cmsis_os.h"
 
 #include "./actuators/actuators.hpp"
 /* Private includes ----------------------------------------------------------*/
@@ -123,6 +124,11 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
 
+
+  osThreadId_t sensorThreadHandle;
+  osThreadId_t controllerThreadHandle;
+  osThreadId_t actuatorThreadHandle;
+
   //system state variable
   enum System_State sys_state = INIT;
 
@@ -220,65 +226,87 @@ int main(void)
 
 	  	  case COMMS_INIT_DONE:
 	  	  	  {
-	  	  		  comms.Enable_Receive();
-	  	  		  uint8_t fifo_status, status, config, rf_setup, rf_ch = 0xff;
-	  	  		  uint8_t rx_addr[5] = {0xff, 0xff, 0xff, 0xff, 0xff};
-	  	  		  comms.Clear_FIFO_Interrupt();
-	  	  		  comms.Read_Register(FIFO_STATUS, &fifo_status);
-	  	  		  comms.Read_Register(STATUS, &status);
-	  	  		  comms.Read_Register(CONFIG, &config);
-	  	  		  comms.Read_Register(RF_SETUP, &rf_setup);
-	  	  		  comms.Read_Register(RF_CH, &rf_ch);
-
-
-	  	  		  while(1){
-	  	  			  comms.Read_Register(FIFO_STATUS, &fifo_status);
-	  	  			  comms.Read_Register(STATUS, &status);
-	  	  			  comms.Read_Register(CONFIG, &config);
-	  	  			  comms.Read_Register(RF_SETUP, &rf_setup);
-	  	  			  comms.Read_Register(RF_CH, &rf_ch);
-	  	  			  comms.Flush_RX();
-	  	  			  comms.Enable_Receive();
-	  	  			  HAL_Delay(100);
-	  	  			  if(comms.Payload_Available()){
-	  	  				  comms.Read_Payload();
-	  	  			  }
-	  	  		  }
-
+//	  	  		  comms.Enable_Receive();
+////	  	  		  uint8_t fifo_status, status, config, rf_setup, rf_ch = 0xff;
+////	  	  		  uint8_t rx_addr[5] = {0xff, 0xff, 0xff, 0xff, 0xff};
+////	  	  		  comms.Clear_FIFO_Interrupt();
+////	  	  		  comms.Read_Register(FIFO_STATUS, &fifo_status);
+////	  	  		  comms.Read_Register(STATUS, &status);
+////	  	  		  comms.Read_Register(CONFIG, &config);
+////	  	  		  comms.Read_Register(RF_SETUP, &rf_setup);
+////	  	  		  comms.Read_Register(RF_CH, &rf_ch);
+////
+////
+////	  	  		  while(1){
+////	  	  			  comms.Read_Register(FIFO_STATUS, &fifo_status);
+////	  	  			  comms.Read_Register(STATUS, &status);
+////	  	  			  comms.Read_Register(CONFIG, &config);
+////	  	  			  comms.Read_Register(RF_SETUP, &rf_setup);
+////	  	  			  comms.Read_Register(RF_CH, &rf_ch);
+////	  	  			  comms.Flush_RX();
+////	  	  			  comms.Enable_Receive();
+////	  	  			  HAL_Delay(100);
+////	  	  			  if(comms.Payload_Available()){
+////	  	  				  comms.Read_Payload();
+////	  	  			  }
+////	  	  		  }
+	  	  		  sys_state = RTOS;
 	  	  	  }
 	  	  	  break;
 
 	  	  case RTOS:
 	  	  	  {
 
-	  	  		  uint8_t dt = 1;
+	  	  		  const osThreadAttr_t sensorThreadAttr = {
+	  	  				  .name = "sensorThreadAttr";
+	  	  				  .priority = (osPriority_t) osPriorityNormal;
+	  	  				  .stack_size = 256;
+	  	  		  }
+	  	  		const osThreadAttr_t controllerThreadAttr = {
+	  	  				.name = "controllerThead";
+	  	  			  	.priority = (osPriority_t) osPriorityNormal;
+	  	  			  	.stack_size = 256;
+	  	  		}
+	  	  		const osThreadAttr_t actuatorThreadAttr = {
+	  	  				.name = "actuatorThread";
+	  	  			  	.priority = (osPriority_t) osPriorityNormal;
+	  	  			  	.stack_size = 256;
+	  	  		}
 
-				  IMU_Sample* sample_i = malloc(sizeof(IMU_Sample));
-				  TRPY_Controller* trpy_c = Construct_TRPY_Controller(dt);
-
-				  TRPY_Setpoint* hover = malloc(sizeof(TRPY_Setpoint));
-				  hover->pitch_setpoint = 0;
-				  hover->roll_setpoint = 0;
-				  hover->yaw_setpoint = 0;
-				  hover->z_setpoint = 0;
-
-				  Update_Setpoint(trpy_c, hover);
-
-				  while(1){
+	  	  		  osKernelInitialize();
 
 
 
-					  Update_IMU_Sample(sample_i);
-					  Iter_TRPY_Controller(trpy_c, sample_i);
-					  Motor_Mixing_Algorithm(trpy_c->trpy_o);
 
-					  //float p_thrust = 0.3;
-					  //BLHeli_Set_Thrust_Percent(&p_thrust);
 
-	//	  			  for(int i = 0; i < 10; i++){
-	//	  				  	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-	//	  				  	HAL_Delay(500);
-	//	  			  }
+//	  	  		  uint8_t dt = 1;
+//
+//				  IMU_Sample* sample_i = malloc(sizeof(IMU_Sample));
+//				  TRPY_Controller* trpy_c = Construct_TRPY_Controller(dt);
+//
+//				  TRPY_Setpoint* hover = malloc(sizeof(TRPY_Setpoint));
+//				  hover->pitch_setpoint = 0;
+//				  hover->roll_setpoint = 0;
+//				  hover->yaw_setpoint = 0;
+//				  hover->z_setpoint = 0;
+//
+//				  Update_Setpoint(trpy_c, hover);
+//
+//				  while(1){
+//
+//
+//
+//					  Update_IMU_Sample(sample_i);
+//					  Iter_TRPY_Controller(trpy_c, sample_i);
+//					  Motor_Mixing_Algorithm(trpy_c->trpy_o);
+//
+//					  float p_thrust = 0.3;
+//					  BLHeli_Set_Thrust_Percent(&p_thrust);
+//
+//		  			  for(int i = 0; i < 10; i++){
+//		  				  	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+//		  				  	HAL_Delay(500);
+//		  			  }
 
 				  }
 	  	  	  }

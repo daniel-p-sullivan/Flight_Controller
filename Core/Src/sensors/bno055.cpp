@@ -14,7 +14,7 @@ BNO055::BNO055(I2C_HandleTypeDef hi2c1){
 	this->i2c = hi2c1;
 }
 
-bool BNO055::Config_Sensor(void){
+bool BNO055::configSensor(void){
 
 	static uint8_t op_mode = IMU_OP_MODE;
 

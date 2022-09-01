@@ -8,13 +8,15 @@
 #ifndef SRC_MATH_TRANSFORMERS_HPP_
 #define SRC_MATH_TRANSFORMERS_HPP_
 
+#include <vector>
+
 namespace transformers{
 
 
-vector<vector<float>>& Rx(float psi);
-vector<vector<float>>& Ry(float theta);
-vector<vector<float>>& Rz(float psi);
-vector<vector<float>>& bodyFrameToInertialFrame(float phi, float theta, float psi);
+std::vector<std::vector<float>> Rx(float psi);
+std::vector<std::vector<float>> Ry(float theta);
+std::vector<std::vector<float>> Rz(float psi);
+std::vector<std::vector<float>>& bodyFrameToInertialFrame(float phi, float theta, float psi);
 
 }
 

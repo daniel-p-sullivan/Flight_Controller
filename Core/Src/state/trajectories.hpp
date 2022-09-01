@@ -9,22 +9,23 @@
 #define SRC_STATE_TRAJECTORIES_HPP_
 
 #include "state.hpp"
+#include <vector>
 
 namespace state{
 
-class Trajectory{
-public:
-	vector<State>& get_trajectory();
-private:
-	vector<State> traj;
-};
-
-class ControlTraj : Trajectory{
-public:
-	vector<action>& getControlTrajectory();
-private:
-	vector<action> controlActions;
-};
+//class Trajectory{
+//public:
+//	std::vector<State>& get_trajectory();
+//private:
+//	std::vector<State> traj;
+//};
+//
+//class ControlTraj : Trajectory{
+//public:
+//	std::vector<action>& getControlTrajectory();
+//private:
+//	std::vector<action> controlActions;
+//};
 
 
 }

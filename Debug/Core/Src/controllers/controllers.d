@@ -36,12 +36,14 @@ Core/Src/controllers/controllers.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
- ../Core/Src/controllers/../actuators/blhelis.hpp \
- ../Core/Src/controllers/../actuators/actuators.hpp \
+ ../Core/Src/controllers/../actuators/../state/state.hpp \
  ../Core/Src/controllers/../sensors/sensors.hpp \
- ../Core/Src/controllers/../sensors/bno055.hpp \
- ../Core/Src/controllers/../sensors/sensors.hpp \
- ../Core/Src/controllers/../state/state.hpp
+ ../Core/Src/controllers/../sensors/../state/state.hpp \
+ ../Core/Src/controllers/../state/state.hpp \
+ ../Core/Src/controllers/../state/trajectories.hpp \
+ ../Core/Src/controllers/../state/state.hpp \
+ ../Core/Src/controllers/../model/models.hpp \
+ ../Core/Src/controllers/../model/../state/state.hpp
 ../Core/Src/controllers/controllers.hpp:
 ../Core/Src/controllers/../actuators/actuators.hpp:
 ../Core/Inc/main.h:
@@ -79,9 +81,11 @@ Core/Src/controllers/controllers.o: \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
-../Core/Src/controllers/../actuators/blhelis.hpp:
-../Core/Src/controllers/../actuators/actuators.hpp:
+../Core/Src/controllers/../actuators/../state/state.hpp:
 ../Core/Src/controllers/../sensors/sensors.hpp:
-../Core/Src/controllers/../sensors/bno055.hpp:
-../Core/Src/controllers/../sensors/sensors.hpp:
+../Core/Src/controllers/../sensors/../state/state.hpp:
 ../Core/Src/controllers/../state/state.hpp:
+../Core/Src/controllers/../state/trajectories.hpp:
+../Core/Src/controllers/../state/state.hpp:
+../Core/Src/controllers/../model/models.hpp:
+../Core/Src/controllers/../model/../state/state.hpp:

@@ -8,11 +8,9 @@
 
 #include "../sensors/sensors.hpp"
 #include "../state/state.hpp"
-
+#include "../sensors/bno055.hpp"
 
 namespace threads{
-
-
 
 
 void sensorThread(state::QuadStateVector& state, sensors::BNO055 imu){

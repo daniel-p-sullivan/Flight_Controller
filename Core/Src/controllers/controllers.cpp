@@ -13,17 +13,14 @@
 
 namespace control{
 
-class PI{
-public:
-	PI(float sp, float dt, float Kp, float Ki){
+PI::PI(float sp, float dt, float Kp, float Ki){
 		this->setpoint = sp;
 		this->dt = dt;
 		this->Kp = Kp;
 		this->Ki = Ki;
-	}
+}
 
-	float calcOutput(float stateEstimate){
-		static float output = 0;
+float PI::calcOutput(float stateEstimate){
 		static float error = 0;
 		static float ierror = 0;
 
@@ -36,11 +33,8 @@ public:
 			ierror = -10;
 		}
 		return (this->Kp * error + this->Ki * ierror);
-	}
+}
 
-
-
-};
 
 
 

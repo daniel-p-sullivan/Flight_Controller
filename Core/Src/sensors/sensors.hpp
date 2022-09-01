@@ -10,7 +10,6 @@
 
 #include "main.h"
 #include "stm32f4xx_hal.h"
-#include "bno055.hpp"
 #include "../state/state.hpp"
 
 #include <stdbool.h>
@@ -22,11 +21,9 @@ namespace sensors{
 class IMU{
 public:
 	virtual bool configSensor(void);
-	virtual state::QuadStateVector readIMU(void);
+	virtual state::QuadStateVector& readIMU(void);
+
+};
+
 }
-
-
-
-
-
 #endif /* SRC_SENSORS_HPP_ */
