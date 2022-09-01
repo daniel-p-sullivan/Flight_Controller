@@ -25,7 +25,7 @@ typedef struct motor_sp{
 
 class Motors{
 public:
-	virtual void actuateMotors(state::QuadControlActions& ac);
+	void actuateMotors(state::QuadControlActions& ac);
 };
 }
 

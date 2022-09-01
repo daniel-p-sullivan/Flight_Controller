@@ -19,15 +19,15 @@ void controllerThread(void* pvParameters){
 	control::PI pitchController = control::PI(0, 0.1, 10, 2);
 	state::QuadStateVector localState;
 	state::QuadControlActions localOutput;
-	state::QuadStateVector& globalStateRef = ((controllerThreadArgs*)pvParameters)->state;
-	state::QuadControlActions& globalOutputRef = ((controllerThreadArgs*)pvParameters)->output;
+	state::QuadStateVector* globalStateRef = ((controllerThreadArgs*)pvParameters)->state;
+	state::QuadControlActions* globalOutputRef = ((controllerThreadArgs*)pvParameters)->output;
 	SemaphoreHandle_t xSharedStateMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedStateMutex);
 	SemaphoreHandle_t xSharedOutputMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedOutputMutex);
 
 	while(1){
 
 		xSemaphoreTake(xSharedStateMutex, (TickType_t) 0); //nonblocking
-		localState = globalStateRef;
+		localState = *globalStateRef;
 		xSemaphoreGive(xSharedStateMutex);
 
 
@@ -37,7 +37,7 @@ void controllerThread(void* pvParameters){
 		localOutput.u4 = yawController.calcOutput(localState.phi);
 
 		xSemaphoreTake(xSharedOutputMutex, (TickType_t) 0);
-		globalOutputRef = localOutput;
+		*globalOutputRef = localOutput;
 		xSemaphoreGive(xSharedOutputMutex);
 
 

@@ -162,10 +162,10 @@ int main(void)
 	  state::QuadStateVector sharedState;
 	  state::QuadControlActions sharedOutput;
 
-	  sensorArgs.state = sharedState;
-	  controllerArgs.state = sharedState;
-	  controllerArgs.output = sharedOutput;
-	  actuatorArgs.output = sharedOutput;
+	  sensorArgs.state = &sharedState;
+	  controllerArgs.state = &sharedState;
+	  controllerArgs.output = &sharedOutput;
+	  actuatorArgs.output = &sharedOutput;
 
 	  switch(sys_state){
 
@@ -177,7 +177,7 @@ int main(void)
 
 
 	  	  		  imu_config_flag = imu.configSensor();
-	  	  		  sensorArgs.imu = imu;
+	  	  		  sensorArgs.imu = &imu;
 
 	  	  		  if(imu_config_flag){
 	  	  			  sys_state = IMU_CALIB_INIT;
@@ -221,7 +221,7 @@ int main(void)
 	  	  	  {
 	  	  		  HAL_Delay(1000);
 	  	  		  actuators::BLHelis motors(htim8);
-	  	  		  actuatorArgs.motors = motors;
+	  	  		  actuatorArgs.motors = &motors;
 	  	  		  //BLHeli_Start(); ?
 	  	  		  //BLHeli_Arm(); ?
 	  	  		  sys_state = MOTOR_INIT_DONE;

@@ -15,8 +15,8 @@
 namespace threads{
 
 struct controllerThreadArgs{
-	state::QuadStateVector& state;
-	state::QuadControlActions& output;
+	state::QuadStateVector* state;
+	state::QuadControlActions* output;
 	SemaphoreHandle_t* pxSharedStateMutex;
 	SemaphoreHandle_t* pxSharedOutputMutex;
 };

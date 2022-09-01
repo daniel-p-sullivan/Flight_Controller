@@ -1,3 +1,1 @@
-../Core/Src/threads/../sensors/sensors.hpp:21:7:constexpr sensors::IMU::IMU(const sensors::IMU&)	16	static
-../Core/Src/threads/../sensors/bno055.hpp:76:7:constexpr sensors::BNO055::BNO055(const sensors::BNO055&)	16	static
-../Core/Src/threads/sensorthread.cpp:14:6:void threads::sensorThread(void*)	168	static
+../Core/Src/threads/sensorthread.cpp:14:6:void threads::sensorThread(void*)	88	static

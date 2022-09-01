@@ -17,8 +17,8 @@ namespace threads{
 
 
 struct sensorThreadArgs{
-	state::QuadStateVector& state;
-	sensors::BNO055 imu;
+	state::QuadStateVector* state;
+	sensors::BNO055* imu;
 	SemaphoreHandle_t* pxSharedStateMutex;
 };
 

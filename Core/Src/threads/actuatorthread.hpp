@@ -17,8 +17,8 @@
 namespace threads{
 
 struct actuatorThreadArgs{
-	state::QuadControlActions& output;
-	actuators::BLHelis motors;
+	state::QuadControlActions* output;
+	actuators::BLHelis* motors;
 	SemaphoreHandle_t* pxSharedOutputMutex;
 };
 

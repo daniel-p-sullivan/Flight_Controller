@@ -20,8 +20,8 @@ namespace sensors{
 
 class IMU{
 public:
-	virtual bool configSensor(void);
-	virtual state::QuadStateVector& readIMU(void);
+	bool configSensor(void);
+	state::QuadStateVector& readIMU(void);
 
 };
 

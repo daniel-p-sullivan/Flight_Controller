@@ -1,8 +1,7 @@
-../Core/Src/sensors/sensors.hpp:21:7:constexpr sensors::IMU::IMU()	16	static
 ../Core/Src/sensors/bno055.cpp:13:1:sensors::BNO055::BNO055(I2C_HandleTypeDef)	16	static
-../Core/Src/sensors/bno055.cpp:17:6:virtual bool sensors::BNO055::configSensor()	40	static
+../Core/Src/sensors/bno055.cpp:17:6:bool sensors::BNO055::configSensor()	40	static
 ../Core/Src/sensors/bno055.cpp:38:6:bool sensors::BNO055::Read_IMU_Calib_Status()	32	static
 ../Core/Src/sensors/bno055.cpp:69:6:bool sensors::BNO055::Write_IMU_Calib_Params()	32	static
 ../Core/Src/sensors/bno055.cpp:88:6:bool sensors::BNO055::Read_Calib_Params()	56	static
-../Core/Src/sensors/bno055.cpp:138:25:virtual state::QuadStateVector& sensors::BNO055::readIMU()	32	static
+../Core/Src/sensors/bno055.cpp:138:25:state::QuadStateVector& sensors::BNO055::readIMU()	32	static
 ../Core/Src/sensors/bno055.cpp:207:6:void sensors::BNO055::I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef*)	48	static,ignoring_inline_asm
