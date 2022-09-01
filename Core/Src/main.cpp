@@ -28,6 +28,9 @@
 #include "./comms/communications.hpp"
 #include "./controllers/controllers.hpp"
 #include "./sensors/sensors.hpp"
+#include "./threads/actuatorthread.hpp"
+#include "./threads/controllerthread.hpp"
+#include "./threads/sensorthread.hpp"
 
 /* USER CODE END Includes */
 
@@ -125,9 +128,7 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-  osThreadId_t sensorThreadHandle;
-  osThreadId_t controllerThreadHandle;
-  osThreadId_t actuatorThreadHandle;
+
 
   //system state variable
   enum System_State sys_state = INIT;
@@ -150,6 +151,20 @@ int main(void)
 	  actuators::Motors motors;
 	  communications::Communicator comms;
 
+	  //thread arguments
+	  threads::controllerThreadArgs controllerArgs;
+	  threads::actuatorThreadArgs actuatorArgs;
+	  threads::sensorThreadArgs sensorArgs;
+
+	  //shared state and controller variables
+	  state::QuadStateVector sharedState;
+	  state::QuadControlActions sharedOutput;
+
+	  sensorArgs.state = sharedState;
+	  controllerArgs.state = sharedState;
+	  controllerArgs.output = sharedOutput;
+	  actuatorArgs.output = sharedOutput;
+
 	  switch(sys_state){
 
 	  	  case INIT:
@@ -161,6 +176,7 @@ int main(void)
 
 	  	  		  sensors::BNO055 imu(hi2c1);
 	  	  		  imu_config_flag = imu.Config_Sensor();
+	  	  		  sensorArgs.imu = imu;
 
 	  	  		  if(imu_config_flag){
 	  	  			  sys_state = IMU_CALIB_INIT;
@@ -204,6 +220,7 @@ int main(void)
 	  	  	  {
 	  	  		  HAL_Delay(1000);
 	  	  		  actuators::BLHelis motors(htim8);
+	  	  		  actuatorArgs.motors = motors;
 	  	  		  //BLHeli_Start(); ?
 	  	  		  //BLHeli_Arm(); ?
 	  	  		  sys_state = MOTOR_INIT_DONE;
@@ -256,22 +273,43 @@ int main(void)
 
 	  	  case RTOS:
 	  	  	  {
+	  	  		  //create the mutexes
+	  	  		  SemaphoreHandle_t xSharedStateMutex = xSemaphoreCreateBinary();
+	  	  		  SemaphoreHandle_t xSharedOutputMutex = xSemaphoreCreateBinary();
 
-	  	  		  const osThreadAttr_t sensorThreadAttr = {
-	  	  				  .name = "sensorThreadAttr";
-	  	  				  .priority = (osPriority_t) osPriorityNormal;
-	  	  				  .stack_size = 256;
-	  	  		  }
-	  	  		const osThreadAttr_t controllerThreadAttr = {
-	  	  				.name = "controllerThead";
-	  	  			  	.priority = (osPriority_t) osPriorityNormal;
-	  	  			  	.stack_size = 256;
-	  	  		}
-	  	  		const osThreadAttr_t actuatorThreadAttr = {
-	  	  				.name = "actuatorThread";
-	  	  			  	.priority = (osPriority_t) osPriorityNormal;
-	  	  			  	.stack_size = 256;
-	  	  		}
+	  	  		  //open them
+	  	  		  xSemaphoreGive(xSharedStateMutex);
+	  	  		  xSemaphoreGive(xSharedOutputMutex);
+
+	  	  		  controllerArgs.pxSharedOutputMutex = &xSharedOutputMutex;
+	  	  		  controllerArgs.pxSharedStateMutex = &xSharedStateMutex;
+	  	  		  sensorArgs.pxSharedStateMutex = &xSharedStateMutex;
+	  	  		  actuatorArgs.pxSharedOutputMutex = &xSharedOutputMutex;
+
+	  	  		  TaskHandle_t xSensorThreadHandle;
+	  	  		  TaskHandle_t xActuatorThreadHandle;
+	  	  		  TaskHandle_t xControllerThreadHandle;
+
+	  	  		  xRet = xTaskCreate(threads::sensorThread,
+	  	  			  	  			"sensorThread",
+	  	  							256,
+	  	  							(void*)sensorArgs,
+	  	  							configMAX_PRIORITIES-1,
+	  	  							&xSensorThreadHandle);
+
+	  	  		  xRet = xTaskCreate(threads::controllerThread,
+	  	  				  	  	  	  "controllerThread",
+									  256,
+									  (void*)controllerArgs,
+									  configMAX_PRIORITIES-1,
+									  &xControllerThreadHandle);
+
+	  	  		 xRet = xTaskCreate(threads::actuatorThread,
+	  	  							"actuatorThread",
+									256,
+	  	  							(void*)actuatorArgs,
+									configMAX_PRIORITIES-1,
+	  	  							&xActuatorThreadHandle);
 
 	  	  		  osKernelInitialize();
 

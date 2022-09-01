@@ -1,1 +1,3 @@
-../Core/Src/threads/actuatorthread.cpp:14:6:void threads::actuatorThread(state::QuadControlActions&, TIM_HandleTypeDef, actuators::BLHelis)	40	static
+../Core/Src/threads/../actuators/actuators.hpp:26:7:constexpr actuators::Motors::Motors(const actuators::Motors&)	16	static
+../Core/Src/threads/../actuators/blhelis.hpp:24:7:constexpr actuators::BLHelis::BLHelis(const actuators::BLHelis&)	16	static
+../Core/Src/threads/actuatorthread.cpp:14:6:void threads::actuatorThread(void*)	56	static

@@ -5,38 +5,40 @@
  *      Author: danie
  */
 
-#include "../controllers/controllers.hpp"
-#include "../state/state.hpp"
 
+#include "controllerthread.hpp"
 
 namespace threads{
 
-void controllerThread(state::QuadStateVector& stateEstimate, state::QuadControlActions& output){
+void controllerThread(void* pvParameters){
 
 
 	control::PI thrustController = control::PI(0, 0.1, 10, 2);
 	control::PI yawController = control::PI(0, 0.1, 10, 2);
 	control::PI rollController = control::PI(0, 0.1, 10, 2);
 	control::PI pitchController = control::PI(0, 0.1, 10, 2);
-	state::QuadStateVector estimate;
-	state::QuadControlActions calcedOutput;
+	state::QuadStateVector localState;
+	state::QuadControlActions localOutput;
+	state::QuadStateVector& globalStateRef = ((controllerThreadArgs*)pvParameters)->state;
+	state::QuadControlActions& globalOutputRef = ((controllerThreadArgs*)pvParameters)->output;
+	SemaphoreHandle_t xSharedStateMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedStateMutex);
+	SemaphoreHandle_t xSharedOutputMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedOutputMutex);
 
 	while(1){
 
-		//get measurement
-		//lock(stateEstimate)
-		estimate = stateEstimate;
-		//unlock(stateEstimate)
+		xSemaphoreTake(xSharedStateMutex, (TickType_t) 0); //nonblocking
+		localState = globalStateRef;
+		xSemaphoreGive(xSharedStateMutex);
 
 
-		calcedOutput.u1 = thrustController.calcOutput(estimate.z);
-		calcedOutput.u2 = rollController.calcOutput(estimate.psi);
-		calcedOutput.u3 = pitchController.calcOutput(estimate.theta);
-		calcedOutput.u4 = yawController.calcOutput(estimate.phi);
+		localOutput.u1 = thrustController.calcOutput(localState.z);
+		localOutput.u2 = rollController.calcOutput(localState.psi);
+		localOutput.u3 = pitchController.calcOutput(localState.theta);
+		localOutput.u4 = yawController.calcOutput(localState.phi);
 
-		//lock(output)
-		output = calcedOutput;
-		//unlock(output)
+		xSemaphoreTake(xSharedOutputMutex, (TickType_t) 0);
+		globalOutputRef = localOutput;
+		xSemaphoreGive(xSharedOutputMutex);
 
 
 

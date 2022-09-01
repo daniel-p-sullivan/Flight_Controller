@@ -6,25 +6,25 @@
  */
 
 
-#include "../sensors/sensors.hpp"
-#include "../state/state.hpp"
-#include "../sensors/bno055.hpp"
+#include "sensorthread.hpp"
 
 namespace threads{
 
 
-void sensorThread(state::QuadStateVector& state, sensors::BNO055 imu){
+void sensorThread(void* pvParameters){
 
 	state::QuadStateVector localState;
-
+	state::QuadStateVector& globalStateRef = ((sensorThreadArgs*)pvParameters)->state;
+	sensors::BNO055 imuRef = ((sensorThreadArgs*)pvParameters)->imu;
+	SemaphoreHandle_t xSharedStateMutex = *(((sensorThreadArgs*)pvParameters)->pxSharedStateMutex);
 
 	while(1){
 
-		localState = imu.readIMU();
+		localState = imuRef.readIMU();
 
-		//lock(state)
-		state = localState;
-		//unlock(state)
+		xSemaphoreTake(xSharedStateMutex, (TickType_t) 0);
+		globalStateRef = localState;
+		xSemaphoreGive(xSharedStateMutex);
 
 	}
 

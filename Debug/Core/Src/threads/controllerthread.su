@@ -1,1 +1,1 @@
-../Core/Src/threads/controllerthread.cpp:14:6:void threads::controllerThread(state::QuadStateVector&, state::QuadControlActions&)	152	static
+../Core/Src/threads/controllerthread.cpp:13:6:void threads::controllerThread(void*)	168	static

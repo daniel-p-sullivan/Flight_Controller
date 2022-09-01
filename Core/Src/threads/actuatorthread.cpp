@@ -5,26 +5,28 @@
  *      Author: danie
  */
 
-#include "../actuators/actuators.hpp"
-#include "../state/state.hpp"
-#include "../actuators/blhelis.hpp"
+
+#include "actuatorthread.hpp"
 
 namespace threads{
 
-void actuatorThread(state::QuadControlActions& output, TIM_HandleTypeDef tim, actuators::BLHelis motors
-){
 
+void actuatorThread(void* pvParameters){
 
-	state::QuadControlActions myOutput;
+	state::QuadControlActions& globalOutputRef = ((actuatorThreadArgs*)pvParameters)->output;
+	actuators::BLHelis motorsRef = ((actuatorThreadArgs*)pvParameters)->motors;
+	state::QuadControlActions localOutput;
+	SemaphoreHandle_t xSharedOutputMutex = *(((actuatorThreadArgs*)pvParameters)->pxSharedOutputMutex);
+
 
 	while(1){
 
 		//get measurement
-		//lock(output)
-		myOutput = output; //copy the output into local var then release
-		//unlock(output)
+		xSemaphoreTake(xSharedOutputMutex, (TickType_t)0);
+		localOutput = globalOutputRef; //copy the output into local var then release
+		xSemaphoreGive(xSharedOutputMutex);
 
-		motors.actuateMotors(myOutput);
+		motorsRef.actuateMotors(localOutput);
 	}
 
 }
