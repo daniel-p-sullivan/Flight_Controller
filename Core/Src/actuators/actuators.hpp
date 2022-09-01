@@ -10,6 +10,7 @@
 
 #include "main.h"
 #include "stm32f4xx_hal.h"
+#include "../state/state.hpp"
 
 //drivers
 #include "blhelis.hpp"
@@ -25,7 +26,7 @@ typedef struct motor_sp{
 
 class Motors{
 public:
-	virtual void Update_Motor_SP(motor_sp& setpoint);
+	virtual void actuateMotors(state::QuadControlActions ac);
 };
 }
 

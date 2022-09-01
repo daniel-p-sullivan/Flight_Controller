@@ -41,7 +41,8 @@ Core/Src/comms/nrf24.o: ../Core/Src/comms/nrf24.cpp \
  ../Core/Src/comms/../controllers/../sensors/sensors.hpp \
  ../Core/Src/comms/../controllers/../sensors/bno055.hpp \
  ../Core/Src/comms/../controllers/../sensors/sensors.hpp \
- ../Core/Src/comms/../controllers/../state/state.hpp
+ ../Core/Src/comms/../controllers/../state/state.hpp \
+ ../Core/Src/comms/esp01.hpp
 ../Core/Src/comms/nrf24.hpp:
 ../Core/Src/comms/communications.hpp:
 ../Core/Src/comms/../controllers/controllers.hpp:
@@ -87,3 +88,4 @@ Core/Src/comms/nrf24.o: ../Core/Src/comms/nrf24.cpp \
 ../Core/Src/comms/../controllers/../sensors/bno055.hpp:
 ../Core/Src/comms/../controllers/../sensors/sensors.hpp:
 ../Core/Src/comms/../controllers/../state/state.hpp:
+../Core/Src/comms/esp01.hpp:

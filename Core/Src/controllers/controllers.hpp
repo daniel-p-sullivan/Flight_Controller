@@ -12,34 +12,14 @@
 #include "../sensors/sensors.hpp"
 #include "../state/state.hpp"
 
-//#define Kp -1
-#define Ki 0
-#define Kd 1
 
 namespace control{
 
-class Controller{
+class PI{
 public:
-	virtual void set_setpoint(state::Setpoint sp);
-	virtual state::Setpoint calc_output(state::State st);
+	PI(float sp, float dt, float Kp, float Ki);
+	float calcOutput(float stateEstimate);
 };
-
-class RpyController : Controller{
-public:
-	void set_setpoint(state::TrpySetpoint sp);
-	state::RpySetpoint calc_output(state::TrpyState st);
-private:
-	float Kp;
-	float Ki;
-	float dt;
-	state::RpySetpoint sp;
-	state::RpyState meas;
-	state::RpyError err;
-	state::RpyError integ_err;
-};
-
-
-
 
 
 };

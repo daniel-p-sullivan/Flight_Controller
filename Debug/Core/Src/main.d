@@ -44,7 +44,7 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Core/Src/./comms/../controllers/../sensors/sensors.hpp \
  ../Core/Src/./comms/../controllers/../state/state.hpp \
  ../Core/Src/./comms/nrf24.hpp ../Core/Src/./comms/communications.hpp \
- ../Core/Src/./controllers/controllers.hpp \
+ ../Core/Src/./comms/esp01.hpp ../Core/Src/./controllers/controllers.hpp \
  ../Core/Src/./sensors/sensors.hpp
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
@@ -93,5 +93,6 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Core/Src/./comms/../controllers/../state/state.hpp:
 ../Core/Src/./comms/nrf24.hpp:
 ../Core/Src/./comms/communications.hpp:
+../Core/Src/./comms/esp01.hpp:
 ../Core/Src/./controllers/controllers.hpp:
 ../Core/Src/./sensors/sensors.hpp:

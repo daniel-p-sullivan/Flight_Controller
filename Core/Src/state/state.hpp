@@ -11,28 +11,104 @@
 
 namespace state{
 
-struct RpyState{
-	float roll;
-	float pitch;
-	float yaw;
-	float z;
-};
 
-struct XyzState{
+struct QuadStateVector{
+	float phi;
+	float dphi;
+	float theta;
+	float dtheta;
+	float psi;
+	float dpsi;
 	float x;
-	float y;
-	float z;
 	float dx;
+	float y;
 	float dy;
+	float z;
 	float dz;
 };
 
-typedef XyzState XyzSetpoint;
-typedef XyzState XyzError;
-typedef RpyState RpySetpoint;
-typedef RpyState RpyError;
-class State : XyzState, RpyState{};
-class Setpoint : XyzSetpoint, RpySetpoint{};
+struct QuadStateDerivVector{
+	float dphi;
+	float ddphi;
+	float dtheta;
+	float ddtheta;
+	float dpsi;
+	float ddpsi;
+	float dx;
+	float ddx;
+	float dy;
+	float ddy;
+	float dz;
+	float ddz;
+};
+
+struct QuadControlActions{
+	float u1;
+	float u2;
+	float u3;
+	float u4;
+};
+
+
+
+
+
+
+//
+//class State{
+//public:
+//	virtual vector<float> get_state();
+//	virtual void set_state(vector<float>);
+//private:
+//	virtual vector<float> state;
+//};
+//
+//class RpyState : State{
+//public:
+//	vector<float> get_state();
+//	void set_state(vector<float>);
+//private:
+//	vector<float> state;
+//};
+//
+//class XyzState : State{
+//public:
+//	vector<float> get_state();
+//	void set_state(vector<float>);
+//private:
+//	vector<float> state;
+//};
+//
+//
+//class Setpoint{
+//public:
+//	virtual void set_setpoint(vector<float> setpoint);
+//	virtual vector<float> get_setpoint();
+//private:
+//	vector<float> setpoint;
+//};
+//
+//
+//class RpySetpoint : Setpoint{
+//public:
+//	vector<float> get_setpoint();
+//	void set_serpoint(vector<float>);
+//private:
+//	vector<float> setpoint;
+//};
+//
+//class XyzSetpoint : Setpoint{
+//public:
+//	vector<float> get_setpoint();
+//	void set_setpoint(vector<float>);
+//private:
+//	vector<float> setpoint;
+//};
+//
+//
+//typedef XyzState XyzError;
+//typedef RpyState RpyError;
+
 
 
 }

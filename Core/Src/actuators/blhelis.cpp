@@ -7,6 +7,7 @@
 
 
 #include "blhelis.hpp"
+#include "../state/state.hpp"
 
 namespace actuators{
 
@@ -50,12 +51,22 @@ void BLHelis::Init_Motors(void){
 	HAL_Delay(2000);
 }
 
-void BLHelis::Update_Motor_SP(motor_sp& setpoint){
-	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_1, setpoint.m1_sp);
-	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_2, setpoint.m2_sp);
-	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_3, setpoint.m3_sp);
-	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_4, setpoint.m4_sp);
+void BLHelis::actuateMotors(state::QuadControlActions ac){
+
+	static uint16_t m1_sp, m2_sp, m3_sp, m4_sp;
+
+	//mix the controller output
+	m1_sp = ac.u1 + ac.u2 + ac.u3 + ac.u4;
+	m2_sp = ac.u1 - ac.u2 + ac.u3 - ac.u4;
+	m3_sp = ac.u1 + ac.u2 - ac.u3 - ac.u4;
+	m4_sp = ac.u1 - ac.u2 - ac.u3 + ac.u4;
+
+	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_1, m1_sp);
+	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_2, m2_sp);
+	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_3, m3_sp);
+	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_4, m4_sp);
 }
+
 
 void BLHelis::Actuate_Motor_1(void){
 	__HAL_TIM_SET_COMPARE(this->timer, TIM_CHANNEL_1, MOTOR_IDLE);

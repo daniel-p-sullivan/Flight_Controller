@@ -9,6 +9,8 @@
 #define SRC_BLHELIS_HPP_
 
 #include "actuators.hpp"
+#include "../state/state.hpp"
+
 
 #define MOTOR_IDLE 3214  //can be optimized more
 #define MOTOR_IDLE_2
@@ -22,7 +24,7 @@ namespace actuators{
 class BLHelis : Motors{
 public:
 	BLHelis(TIM_HandleTypeDef htim8);
-	void Update_Motor_SP(motor_sp& setpoint);
+	void actuateMotors(state::QuadControlActions ac);
 private:
 	TIM_HandleTypeDef* timer;
 	void Init_Motors(void);
