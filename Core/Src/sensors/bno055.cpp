@@ -30,7 +30,7 @@ bool BNO055::configSensor(void){
 	}
 
 	//add in a delay to allow for the sensor to properly switch operating modes
-	HAL_Delay(100);
+	//HAL_Delay(100);
 
 	return true;
 }

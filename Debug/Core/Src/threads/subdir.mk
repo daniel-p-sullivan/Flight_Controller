@@ -8,18 +8,21 @@ CPP_SRCS += \
 ../Core/Src/threads/actuatorthread.cpp \
 ../Core/Src/threads/controllerthread.cpp \
 ../Core/Src/threads/estimatorthread.cpp \
+../Core/Src/threads/initializerthread.cpp \
 ../Core/Src/threads/sensorthread.cpp 
 
 OBJS += \
 ./Core/Src/threads/actuatorthread.o \
 ./Core/Src/threads/controllerthread.o \
 ./Core/Src/threads/estimatorthread.o \
+./Core/Src/threads/initializerthread.o \
 ./Core/Src/threads/sensorthread.o 
 
 CPP_DEPS += \
 ./Core/Src/threads/actuatorthread.d \
 ./Core/Src/threads/controllerthread.d \
 ./Core/Src/threads/estimatorthread.d \
+./Core/Src/threads/initializerthread.d \
 ./Core/Src/threads/sensorthread.d 
 
 
@@ -30,7 +33,7 @@ Core/Src/threads/%.o Core/Src/threads/%.su: ../Core/Src/threads/%.cpp Core/Src/t
 clean: clean-Core-2f-Src-2f-threads
 
 clean-Core-2f-Src-2f-threads:
-	-$(RM) ./Core/Src/threads/actuatorthread.d ./Core/Src/threads/actuatorthread.o ./Core/Src/threads/actuatorthread.su ./Core/Src/threads/controllerthread.d ./Core/Src/threads/controllerthread.o ./Core/Src/threads/controllerthread.su ./Core/Src/threads/estimatorthread.d ./Core/Src/threads/estimatorthread.o ./Core/Src/threads/estimatorthread.su ./Core/Src/threads/sensorthread.d ./Core/Src/threads/sensorthread.o ./Core/Src/threads/sensorthread.su
+	-$(RM) ./Core/Src/threads/actuatorthread.d ./Core/Src/threads/actuatorthread.o ./Core/Src/threads/actuatorthread.su ./Core/Src/threads/controllerthread.d ./Core/Src/threads/controllerthread.o ./Core/Src/threads/controllerthread.su ./Core/Src/threads/estimatorthread.d ./Core/Src/threads/estimatorthread.o ./Core/Src/threads/estimatorthread.su ./Core/Src/threads/initializerthread.d ./Core/Src/threads/initializerthread.o ./Core/Src/threads/initializerthread.su ./Core/Src/threads/sensorthread.d ./Core/Src/threads/sensorthread.o ./Core/Src/threads/sensorthread.su
 
 .PHONY: clean-Core-2f-Src-2f-threads
 

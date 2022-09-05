@@ -19,6 +19,7 @@ struct controllerThreadArgs{
 	state::QuadControlActions* output;
 	SemaphoreHandle_t* pxSharedStateMutex;
 	SemaphoreHandle_t* pxSharedOutputMutex;
+	SemaphoreHandle_t* pxInitializerMutex;
 };
 
 void controllerThread(void* pvParameters);

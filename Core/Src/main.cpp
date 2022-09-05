@@ -33,6 +33,8 @@
 #include "./threads/actuatorthread.hpp"
 #include "./threads/controllerthread.hpp"
 #include "./threads/sensorthread.hpp"
+#include "./comms/nrf24.hpp"
+#include "./threads/initializerthread.hpp"
 
 /* USER CODE END Includes */
 
@@ -56,23 +58,16 @@ I2C_HandleTypeDef hi2c1;
 SPI_HandleTypeDef hspi2;
 
 TIM_HandleTypeDef htim8;
+TIM_HandleTypeDef htim10;
+
 
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
-
-PCD_HandleTypeDef hpcd_USB_OTG_FS;
+static int counter;
+//PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
-enum System_State {
-	INIT,
-	IMU_CALIB_INIT,
-	IMU_CALIB_DONE,
-	MOTOR_INIT,
-	MOTOR_INIT_DONE,
-	COMMS_INIT,
-	COMMS_INIT_DONE,
-	RTOS
-};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -83,7 +78,7 @@ static void MX_I2C1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_UART4_Init(void);
-static void MX_USB_OTG_FS_PCD_Init(void);
+static void MX_TIM10_Init(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -100,7 +95,7 @@ static void MX_USB_OTG_FS_PCD_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+  counter = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -126,19 +121,104 @@ int main(void)
   MX_SPI2_Init();
   MX_TIM8_Init();
   MX_UART4_Init();
-  MX_USB_OTG_FS_PCD_Init();
   /* USER CODE BEGIN 2 */
 
 
-
-
-  //system state variable
-  enum System_State sys_state = INIT;
-
-  //calibration flags
-  bool imu_config_flag, imu_calib_flag = false;
-
   /* USER CODE END 2 */
+
+  //required devices
+  sensors::BNO055 imu(hi2c1);
+  actuators::BLHelis motors(htim8);
+  communications::NRF24 comms(hspi2);
+
+  //thread arguments
+  threads::controllerThreadArgs controllerArgs;
+  threads::actuatorThreadArgs actuatorArgs;
+  threads::sensorThreadArgs sensorArgs;
+  threads::initializerThreadArgs initializerArgs;
+
+  //create the mutexes
+  SemaphoreHandle_t xSharedStateMutex = xSemaphoreCreateBinary();
+  SemaphoreHandle_t xSharedOutputMutex = xSemaphoreCreateBinary();
+  SemaphoreHandle_t xInitializerMutex = xSemaphoreCreateBinary();
+
+  //shared state and controller variables
+  state::QuadStateVector sharedState;
+  state::QuadControlActions sharedOutput;
+
+  //open them
+  xSemaphoreGive(xSharedStateMutex);
+  xSemaphoreGive(xSharedOutputMutex);
+  xSemaphoreGive(xInitializerMutex);
+
+  //controller thread arguments
+  controllerArgs.pxSharedOutputMutex = &xSharedOutputMutex;
+  controllerArgs.pxSharedStateMutex = &xSharedStateMutex;
+  controllerArgs.state = &sharedState;
+  controllerArgs.output = &sharedOutput;
+  controllerArgs.pxInitializerMutex = &xInitializerMutex;
+
+  //sensor thread arguments
+  sensorArgs.state = &sharedState;
+  sensorArgs.pxSharedStateMutex = &xSharedStateMutex;
+  sensorArgs.pxInitializerMutex = &xInitializerMutex;
+
+  //actuator thread arguments
+  actuatorArgs.pxSharedOutputMutex = &xSharedOutputMutex;
+  actuatorArgs.motors = &motors;
+  actuatorArgs.output = &sharedOutput;
+  actuatorArgs.pxInitializerMutex = &xInitializerMutex;
+
+  //initializer thread arguments
+  initializerArgs.pxIMU = &imu;
+  initializerArgs.pxComms = &comms;
+  initializerArgs.pxMotors = &motors;
+  initializerArgs.pxInitializerMutex = &xInitializerMutex;
+
+  TaskHandle_t xSensorThreadHandle;
+  TaskHandle_t xActuatorThreadHandle;
+  TaskHandle_t xControllerThreadHandle;
+  TaskHandle_t xInitializerThreadHandle;
+
+  BaseType_t xRet;
+
+  //create all tasks
+  xRet = xTaskCreate(threads::initializerThread,
+		             "initializerThread",
+					 256,
+					 (void*)&initializerArgs,
+					 configMAX_PRIORITIES-2, //lowest prio, will run first
+					 &xInitializerThreadHandle);
+
+  xRet = xTaskCreate(threads::sensorThread,
+  	  	  			 "sensorThread",
+  	  	  			 256,
+  	  	  			 (void*)&sensorArgs,
+  	  	  			 configMAX_PRIORITIES-1,
+  	  	  			 &xSensorThreadHandle);
+
+  xRet = xTaskCreate(threads::controllerThread,
+  	  	  		     "controllerThread",
+  					 256,
+  					 (void*)&controllerArgs,
+  					 configMAX_PRIORITIES-1,
+  					 &xControllerThreadHandle);
+
+  xRet = xTaskCreate(threads::actuatorThread,
+  	  	  			 "actuatorThread",
+  					 256,
+  	  	  			 (void*)&actuatorArgs,
+  					 configMAX_PRIORITIES-1,
+  	  	  			 &xActuatorThreadHandle);
+
+  //start the RTOS
+  vTaskStartScheduler();
+
+
+  //never reaches here
+
+
+
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
@@ -147,222 +227,9 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-
-	  //required devices
-	  sensors::BNO055 imu(hi2c1);
-	  actuators::Motors motors;
-	  communications::Communicator comms;
-
-	  //thread arguments
-	  threads::controllerThreadArgs controllerArgs;
-	  threads::actuatorThreadArgs actuatorArgs;
-	  threads::sensorThreadArgs sensorArgs;
-
-	  //shared state and controller variables
-	  state::QuadStateVector sharedState;
-	  state::QuadControlActions sharedOutput;
-
-	  sensorArgs.state = &sharedState;
-	  controllerArgs.state = &sharedState;
-	  controllerArgs.output = &sharedOutput;
-	  actuatorArgs.output = &sharedOutput;
-
-	  switch(sys_state){
-
-	  	  case INIT:
-	  	  	  {
-	  	  		  //time buffer to allow BNO055 to self test?
-	  	  		  HAL_Delay(10);
-
-
-
-	  	  		  imu_config_flag = imu.configSensor();
-	  	  		  sensorArgs.imu = &imu;
-
-	  	  		  if(imu_config_flag){
-	  	  			  sys_state = IMU_CALIB_INIT;
-	  	  		  }
-	  	  	  }
-	  		  break;
-
-	  	  case IMU_CALIB_INIT:
-	  	  	  {
-			  	  //CODE FOR CALIBRATING THE SENSOR
-	  		  	  imu_calib_flag = imu.Read_IMU_Calib_Status();
-	  		  	  bool test = imu.Read_Calib_Params();
-	  		  	  if(imu_calib_flag){
-
-	  			  	  sys_state = IMU_CALIB_DONE;
-	  		  	  }
-	  	  	  }
-	  		  break;
-
-	  		  //known calibration parameters
-//	  		  imu_calib_flag = Write_IMU_Calib_Params();
-//	  		  if(imu_calib_flag){
-//
-//	  			  sys_state = IMU_CALIB_DONE;
-//
-//	  		  }
-//	  		  break;
-
-	  	  case IMU_CALIB_DONE:
-	  	  	  {
-	  		  	  //blink an LED, transistion to RTOS
-			  	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-			  	  HAL_Delay(1000);
-			  	  HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-			  	  HAL_Delay(1000);
-	  		  	  sys_state = MOTOR_INIT;
-	  	  	  }
-	  		  break;
-
-	  	  case MOTOR_INIT:
-	  	  	  {
-	  	  		  HAL_Delay(1000);
-	  	  		  actuators::BLHelis motors(htim8);
-	  	  		  actuatorArgs.motors = &motors;
-	  	  		  //BLHeli_Start(); ?
-	  	  		  //BLHeli_Arm(); ?
-	  	  		  sys_state = MOTOR_INIT_DONE;
-	  	  	  }
-	  		  break;
-
-	  	  case MOTOR_INIT_DONE:
-	  	  	  {
-	  		  	  sys_state = COMMS_INIT;
-	  	  	  }
-	  	  	  break;
-
-	  	  case COMMS_INIT:
-	  	  	  {
-	  	  		  //communications::NRF24 comms(hspi2);
-	  	  		  sys_state = COMMS_INIT_DONE;
-	  	  	  }
-	  	  	  break;
-
-
-	  	  case COMMS_INIT_DONE:
-	  	  	  {
-//	  	  		  comms.Enable_Receive();
-////	  	  		  uint8_t fifo_status, status, config, rf_setup, rf_ch = 0xff;
-////	  	  		  uint8_t rx_addr[5] = {0xff, 0xff, 0xff, 0xff, 0xff};
-////	  	  		  comms.Clear_FIFO_Interrupt();
-////	  	  		  comms.Read_Register(FIFO_STATUS, &fifo_status);
-////	  	  		  comms.Read_Register(STATUS, &status);
-////	  	  		  comms.Read_Register(CONFIG, &config);
-////	  	  		  comms.Read_Register(RF_SETUP, &rf_setup);
-////	  	  		  comms.Read_Register(RF_CH, &rf_ch);
-////
-////
-////	  	  		  while(1){
-////	  	  			  comms.Read_Register(FIFO_STATUS, &fifo_status);
-////	  	  			  comms.Read_Register(STATUS, &status);
-////	  	  			  comms.Read_Register(CONFIG, &config);
-////	  	  			  comms.Read_Register(RF_SETUP, &rf_setup);
-////	  	  			  comms.Read_Register(RF_CH, &rf_ch);
-////	  	  			  comms.Flush_RX();
-////	  	  			  comms.Enable_Receive();
-////	  	  			  HAL_Delay(100);
-////	  	  			  if(comms.Payload_Available()){
-////	  	  				  comms.Read_Payload();
-////	  	  			  }
-////	  	  		  }
-	  	  		  sys_state = RTOS;
-	  	  	  }
-	  	  	  break;
-
-	  	  case RTOS:
-	  	  	  {
-
-	  	  		  //osKernelInitialize();
-
-	  	  		  //create the mutexes
-	  	  		  SemaphoreHandle_t xSharedStateMutex = xSemaphoreCreateBinary();
-	  	  		  SemaphoreHandle_t xSharedOutputMutex = xSemaphoreCreateBinary();
-
-	  	  		  //open them
-	  	  		  xSemaphoreGive(xSharedStateMutex);
-	  	  		  xSemaphoreGive(xSharedOutputMutex);
-
-	  	  		  controllerArgs.pxSharedOutputMutex = &xSharedOutputMutex;
-	  	  		  controllerArgs.pxSharedStateMutex = &xSharedStateMutex;
-	  	  		  sensorArgs.pxSharedStateMutex = &xSharedStateMutex;
-	  	  		  actuatorArgs.pxSharedOutputMutex = &xSharedOutputMutex;
-
-	  	  		  TaskHandle_t xSensorThreadHandle;
-	  	  		  TaskHandle_t xActuatorThreadHandle;
-	  	  		  TaskHandle_t xControllerThreadHandle;
-
-	  	  		  BaseType_t xRet;
-
-	  	  		  xRet = xTaskCreate(threads::sensorThread,
-	  	  			  	  			"sensorThread",
-	  	  							256,
-	  	  							(void*)&sensorArgs,
-	  	  							configMAX_PRIORITIES-1,
-	  	  							&xSensorThreadHandle);
-
-	  	  		  xRet = xTaskCreate(threads::controllerThread,
-	  	  				  	  	  	  "controllerThread",
-									  256,
-									  (void*)&controllerArgs,
-									  configMAX_PRIORITIES-1,
-									  &xControllerThreadHandle);
-
-	  	  		 xRet = xTaskCreate(threads::actuatorThread,
-	  	  							"actuatorThread",
-									256,
-	  	  							(void*)&actuatorArgs,
-									configMAX_PRIORITIES-1,
-	  	  							&xActuatorThreadHandle);
-
-	  	  		  vTaskStartScheduler();
-
-
-
-
-
-//	  	  		  uint8_t dt = 1;
-//
-//				  IMU_Sample* sample_i = malloc(sizeof(IMU_Sample));
-//				  TRPY_Controller* trpy_c = Construct_TRPY_Controller(dt);
-//
-//				  TRPY_Setpoint* hover = malloc(sizeof(TRPY_Setpoint));
-//				  hover->pitch_setpoint = 0;
-//				  hover->roll_setpoint = 0;
-//				  hover->yaw_setpoint = 0;
-//				  hover->z_setpoint = 0;
-//
-//				  Update_Setpoint(trpy_c, hover);
-//
-//				  while(1){
-//
-//
-//
-//					  Update_IMU_Sample(sample_i);
-//					  Iter_TRPY_Controller(trpy_c, sample_i);
-//					  Motor_Mixing_Algorithm(trpy_c->trpy_o);
-//
-//					  float p_thrust = 0.3;
-//					  BLHeli_Set_Thrust_Percent(&p_thrust);
-//
-//		  			  for(int i = 0; i < 10; i++){
-//		  				  	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-//		  				  	HAL_Delay(500);
-//		  			  }
-
-				  }
-	  	  	  }
-	  		  break;
-
-
-	  		  //Kernel_Initialize();
-
-	  }
   }
   /* USER CODE END 3 */
-
+}
 
 /**
   * @brief System Clock Configuration
@@ -574,6 +441,32 @@ static void MX_TIM8_Init(void)
 
 }
 
+static void MX_TIM10_Init(void)
+{
+
+  /* USER CODE BEGIN TIM10_Init 0 */
+
+  /* USER CODE END TIM10_Init 0 */
+
+  /* USER CODE BEGIN TIM10_Init 1 */
+
+  /* USER CODE END TIM10_Init 1 */
+  htim10.Instance = TIM10;
+  htim10.Init.Prescaler = 83;
+  htim10.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim10.Init.Period = 999;
+  htim10.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim10.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim10) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM10_Init 2 */
+
+  /* USER CODE END TIM10_Init 2 */
+
+}
+
 /**
   * @brief UART4 Initialization Function
   * @param None
@@ -640,40 +533,6 @@ static void MX_USART2_UART_Init(void)
 
 }
 
-/**
-  * @brief USB_OTG_FS Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USB_OTG_FS_PCD_Init(void)
-{
-
-  /* USER CODE BEGIN USB_OTG_FS_Init 0 */
-
-  /* USER CODE END USB_OTG_FS_Init 0 */
-
-  /* USER CODE BEGIN USB_OTG_FS_Init 1 */
-
-  /* USER CODE END USB_OTG_FS_Init 1 */
-  hpcd_USB_OTG_FS.Instance = USB_OTG_FS;
-  hpcd_USB_OTG_FS.Init.dev_endpoints = 6;
-  hpcd_USB_OTG_FS.Init.speed = PCD_SPEED_FULL;
-  hpcd_USB_OTG_FS.Init.dma_enable = DISABLE;
-  hpcd_USB_OTG_FS.Init.phy_itface = PCD_PHY_EMBEDDED;
-  hpcd_USB_OTG_FS.Init.Sof_enable = DISABLE;
-  hpcd_USB_OTG_FS.Init.low_power_enable = DISABLE;
-  hpcd_USB_OTG_FS.Init.lpm_enable = DISABLE;
-  hpcd_USB_OTG_FS.Init.vbus_sensing_enable = DISABLE;
-  hpcd_USB_OTG_FS.Init.use_dedicated_ep1 = DISABLE;
-  if (HAL_PCD_Init(&hpcd_USB_OTG_FS) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USB_OTG_FS_Init 2 */
-
-  /* USER CODE END USB_OTG_FS_Init 2 */
-
-}
 
 /**
   * @brief GPIO Initialization Function
@@ -694,7 +553,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(LD2_GPIO_Port, LD2_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-//  HAL_GPIO_WritePin(GPIOB, NRF24_CE_Pin|NRF24_CSN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, NRF24_CE_Pin|NRF24_CSN_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : B1_Pin */
   GPIO_InitStruct.Pin = B1_Pin;
@@ -716,7 +575,7 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(NRF24_RX_DR_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : NRF24_CE_Pin NRF24_CSN_Pin */
-//  GPIO_InitStruct.Pin = NRF24_CE_Pin|NRF24_CSN_Pin;
+  GPIO_InitStruct.Pin = NRF24_CE_Pin|NRF24_CSN_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -725,8 +584,24 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+  if (htim->Instance == TIM10){
+	  counter++;
+  }
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
+
 
 /* USER CODE END 4 */
+
 
 /**
   * @brief  This function is executed in case of error occurrence.
@@ -761,3 +636,76 @@ void assert_failed(uint8_t *file, uint32_t line)
 #endif /* USE_FULL_ASSERT */
 
 /************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
+
+
+
+
+//OLD CODE BELOW
+
+
+
+
+  //known calibration parameters
+//	  		  imu_calib_flag = Write_IMU_Calib_Params();
+//	  		  if(imu_calib_flag){
+//
+//	  			  sys_state = IMU_CALIB_DONE;
+//
+//	  		  }
+//	  		  break;
+
+
+//	  	  		  uint8_t dt = 1;
+		//
+		//				  IMU_Sample* sample_i = malloc(sizeof(IMU_Sample));
+		//				  TRPY_Controller* trpy_c = Construct_TRPY_Controller(dt);
+		//
+		//				  TRPY_Setpoint* hover = malloc(sizeof(TRPY_Setpoint));
+		//				  hover->pitch_setpoint = 0;
+		//				  hover->roll_setpoint = 0;
+		//				  hover->yaw_setpoint = 0;
+		//				  hover->z_setpoint = 0;
+		//
+		//				  Update_Setpoint(trpy_c, hover);
+		//
+		//				  while(1){
+		//
+		//
+		//
+		//					  Update_IMU_Sample(sample_i);
+		//					  Iter_TRPY_Controller(trpy_c, sample_i);
+		//					  Motor_Mixing_Algorithm(trpy_c->trpy_o);
+		//
+		//					  float p_thrust = 0.3;
+		//					  BLHeli_Set_Thrust_Percent(&p_thrust);
+		//
+		//		  			  for(int i = 0; i < 10; i++){
+		//		  				  	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+		//		  				  	HAL_Delay(500);
+		//		  			  }
+
+
+//	  	  		  comms.Enable_Receive();
+	////	  	  		  uint8_t fifo_status, status, config, rf_setup, rf_ch = 0xff;
+	////	  	  		  uint8_t rx_addr[5] = {0xff, 0xff, 0xff, 0xff, 0xff};
+	////	  	  		  comms.Clear_FIFO_Interrupt();
+	////	  	  		  comms.Read_Register(FIFO_STATUS, &fifo_status);
+	////	  	  		  comms.Read_Register(STATUS, &status);
+	////	  	  		  comms.Read_Register(CONFIG, &config);
+	////	  	  		  comms.Read_Register(RF_SETUP, &rf_setup);
+	////	  	  		  comms.Read_Register(RF_CH, &rf_ch);
+	////
+	////
+	////	  	  		  while(1){
+	////	  	  			  comms.Read_Register(FIFO_STATUS, &fifo_status);
+	////	  	  			  comms.Read_Register(STATUS, &status);
+	////	  	  			  comms.Read_Register(CONFIG, &config);
+	////	  	  			  comms.Read_Register(RF_SETUP, &rf_setup);
+	////	  	  			  comms.Read_Register(RF_CH, &rf_ch);
+	////	  	  			  comms.Flush_RX();
+	////	  	  			  comms.Enable_Receive();
+	////	  	  			  HAL_Delay(100);
+	////	  	  			  if(comms.Payload_Available()){
+	////	  	  				  comms.Read_Payload();
+	////	  	  			  }
+	////	  	  		  }

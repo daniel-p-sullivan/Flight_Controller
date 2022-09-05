@@ -1,0 +1,15 @@
+../Core/Src/comms/nrf24.cpp:19:1:communications::NRF24::NRF24(SPI_HandleTypeDef)	32	static
+../Core/Src/comms/nrf24.cpp:79:6:void communications::NRF24::Read_Register(uint8_t, uint8_t*)	32	static
+../Core/Src/comms/nrf24.cpp:96:6:void communications::NRF24::Write_Register(uint8_t, uint8_t*)	32	static
+../Core/Src/comms/nrf24.cpp:112:6:void communications::NRF24::Read_MB_Register(uint8_t, uint8_t*, uint8_t)	32	static
+../Core/Src/comms/nrf24.cpp:133:6:void communications::NRF24::Write_MB_Register(uint8_t, uint8_t*, uint8_t)	32	static
+../Core/Src/comms/nrf24.cpp:153:6:void communications::NRF24::Read_Payload()	32	static
+../Core/Src/comms/nrf24.cpp:182:6:void communications::NRF24::Set_Payload_Size(uint8_t)	24	static
+../Core/Src/comms/nrf24.cpp:196:6:void communications::NRF24::Send_Command(uint8_t)	16	static
+../Core/Src/comms/nrf24.cpp:208:6:void communications::NRF24::Set_Data_Rate(communications::NRF24::nrf24_speed)	24	static
+../Core/Src/comms/nrf24.cpp:217:6:void communications::NRF24::Begin_SPI()	16	static
+../Core/Src/comms/nrf24.cpp:222:6:void communications::NRF24::End_SPI()	16	static
+../Core/Src/comms/nrf24.cpp:228:6:void communications::NRF24::Flush_RX()	16	static
+../Core/Src/comms/nrf24.cpp:233:6:void communications::NRF24::Clear_FIFO_Interrupt()	16	static
+../Core/Src/comms/nrf24.cpp:239:6:bool communications::NRF24::Payload_Available()	16	static
+../Core/Src/comms/nrf24.cpp:248:6:bool communications::NRF24::array_eq(uint8_t*, uint8_t*, uint8_t)	24	static

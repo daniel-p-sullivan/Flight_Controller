@@ -1,4 +1,7 @@
-Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
+Core/Src/threads/initializerthread.o: \
+ ../Core/Src/threads/initializerthread.cpp \
+ ../Core/Src/threads/initializerthread.hpp \
+ ../Core/Src/threads/../actuators/actuators.hpp ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -30,6 +33,21 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
+ ../Core/Src/threads/../actuators/../state/state.hpp \
+ ../Core/Src/threads/../state/state.hpp \
+ ../Core/Src/threads/../sensors/sensors.hpp \
+ ../Core/Src/threads/../sensors/../state/state.hpp \
+ ../Core/Src/threads/../comms/communications.hpp \
+ ../Core/Src/threads/../comms/../controllers/controllers.hpp \
+ ../Core/Src/threads/../comms/../controllers/../actuators/actuators.hpp \
+ ../Core/Src/threads/../comms/../controllers/../sensors/sensors.hpp \
+ ../Core/Src/threads/../comms/../controllers/../state/state.hpp \
+ ../Core/Src/threads/../actuators/blhelis.hpp \
+ ../Core/Src/threads/../actuators/actuators.hpp \
+ ../Core/Src/threads/../sensors/bno055.hpp \
+ ../Core/Src/threads/../sensors/sensors.hpp \
+ ../Core/Src/threads/../comms/nrf24.hpp \
+ ../Core/Src/threads/../comms/communications.hpp \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  ../Core/Inc/FreeRTOSConfig.h \
@@ -46,34 +64,9 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h \
- ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h \
- ../Core/Src/./actuators/actuators.hpp \
- ../Core/Src/./actuators/../state/state.hpp \
- ../Core/Src/./comms/communications.hpp \
- ../Core/Src/./comms/../controllers/controllers.hpp \
- ../Core/Src/./comms/../controllers/../actuators/actuators.hpp \
- ../Core/Src/./comms/../controllers/../sensors/sensors.hpp \
- ../Core/Src/./comms/../controllers/../sensors/../state/state.hpp \
- ../Core/Src/./comms/../controllers/../state/state.hpp \
- ../Core/Src/./controllers/controllers.hpp \
- ../Core/Src/./sensors/sensors.hpp \
- ../Core/Src/./threads/actuatorthread.hpp \
- ../Core/Src/./threads/../actuators/actuators.hpp \
- ../Core/Src/./threads/../state/state.hpp \
- ../Core/Src/./threads/../actuators/blhelis.hpp \
- ../Core/Src/./threads/../actuators/actuators.hpp \
- ../Core/Src/./threads/../actuators/../state/state.hpp \
- ../Core/Src/./threads/controllerthread.hpp \
- ../Core/Src/./threads/../controllers/controllers.hpp \
- ../Core/Src/./threads/sensorthread.hpp \
- ../Core/Src/./threads/../sensors/sensors.hpp \
- ../Core/Src/./threads/../sensors/bno055.hpp \
- ../Core/Src/./threads/../sensors/sensors.hpp \
- ../Core/Src/./threads/../sensors/../state/state.hpp \
- ../Core/Src/./comms/nrf24.hpp ../Core/Src/./comms/communications.hpp \
- ../Core/Src/./threads/initializerthread.hpp \
- ../Core/Src/./threads/../comms/communications.hpp \
- ../Core/Src/./threads/../comms/nrf24.hpp
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
+../Core/Src/threads/initializerthread.hpp:
+../Core/Src/threads/../actuators/actuators.hpp:
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -106,6 +99,21 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
+../Core/Src/threads/../actuators/../state/state.hpp:
+../Core/Src/threads/../state/state.hpp:
+../Core/Src/threads/../sensors/sensors.hpp:
+../Core/Src/threads/../sensors/../state/state.hpp:
+../Core/Src/threads/../comms/communications.hpp:
+../Core/Src/threads/../comms/../controllers/controllers.hpp:
+../Core/Src/threads/../comms/../controllers/../actuators/actuators.hpp:
+../Core/Src/threads/../comms/../controllers/../sensors/sensors.hpp:
+../Core/Src/threads/../comms/../controllers/../state/state.hpp:
+../Core/Src/threads/../actuators/blhelis.hpp:
+../Core/Src/threads/../actuators/actuators.hpp:
+../Core/Src/threads/../sensors/bno055.hpp:
+../Core/Src/threads/../sensors/sensors.hpp:
+../Core/Src/threads/../comms/nrf24.hpp:
+../Core/Src/threads/../comms/communications.hpp:
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS/cmsis_os.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 ../Core/Inc/FreeRTOSConfig.h:
@@ -123,31 +131,3 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h:
-../Core/Src/./actuators/actuators.hpp:
-../Core/Src/./actuators/../state/state.hpp:
-../Core/Src/./comms/communications.hpp:
-../Core/Src/./comms/../controllers/controllers.hpp:
-../Core/Src/./comms/../controllers/../actuators/actuators.hpp:
-../Core/Src/./comms/../controllers/../sensors/sensors.hpp:
-../Core/Src/./comms/../controllers/../sensors/../state/state.hpp:
-../Core/Src/./comms/../controllers/../state/state.hpp:
-../Core/Src/./controllers/controllers.hpp:
-../Core/Src/./sensors/sensors.hpp:
-../Core/Src/./threads/actuatorthread.hpp:
-../Core/Src/./threads/../actuators/actuators.hpp:
-../Core/Src/./threads/../state/state.hpp:
-../Core/Src/./threads/../actuators/blhelis.hpp:
-../Core/Src/./threads/../actuators/actuators.hpp:
-../Core/Src/./threads/../actuators/../state/state.hpp:
-../Core/Src/./threads/controllerthread.hpp:
-../Core/Src/./threads/../controllers/controllers.hpp:
-../Core/Src/./threads/sensorthread.hpp:
-../Core/Src/./threads/../sensors/sensors.hpp:
-../Core/Src/./threads/../sensors/bno055.hpp:
-../Core/Src/./threads/../sensors/sensors.hpp:
-../Core/Src/./threads/../sensors/../state/state.hpp:
-../Core/Src/./comms/nrf24.hpp:
-../Core/Src/./comms/communications.hpp:
-../Core/Src/./threads/initializerthread.hpp:
-../Core/Src/./threads/../comms/communications.hpp:
-../Core/Src/./threads/../comms/nrf24.hpp:

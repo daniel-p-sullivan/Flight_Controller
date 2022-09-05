@@ -13,6 +13,8 @@
 #include "../state/state.hpp"
 #include "../actuators/blhelis.hpp"
 #include "cmsis_os.h"
+#include "FreeRTOS.h"
+
 
 namespace threads{
 
@@ -20,6 +22,7 @@ struct actuatorThreadArgs{
 	state::QuadControlActions* output;
 	actuators::BLHelis* motors;
 	SemaphoreHandle_t* pxSharedOutputMutex;
+	SemaphoreHandle_t* pxInitializerMutex;
 };
 
 
