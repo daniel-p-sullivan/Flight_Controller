@@ -25,10 +25,10 @@ namespace actuators{
 
 class BLHelis : Motors{
 public:
-	BLHelis(TIM_HandleTypeDef htim8);
+	BLHelis(TIM_HandleTypeDef& htim8);
 	void actuateMotors(state::QuadControlActions& ac);
 private:
-	TIM_HandleTypeDef* timer;
+	TIM_HandleTypeDef& timer;
 	void Init_Motors(void);
 	void Start(void);
 	void Set_Thrust_Percent(float *percent);

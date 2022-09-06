@@ -1,10 +1,10 @@
-../Core/Src/actuators/blhelis.cpp:14:1:actuators::BLHelis::BLHelis(TIM_HandleTypeDef)	16	static
-../Core/Src/actuators/blhelis.cpp:19:6:void actuators::BLHelis::Init_Motors()	32	static
-../Core/Src/actuators/blhelis.cpp:54:6:void actuators::BLHelis::actuateMotors(state::QuadControlActions&)	16	static
-../Core/Src/actuators/blhelis.cpp:71:6:void actuators::BLHelis::Actuate_Motor_1()	16	static
-../Core/Src/actuators/blhelis.cpp:75:6:void actuators::BLHelis::Actuate_Motor_2()	16	static
-../Core/Src/actuators/blhelis.cpp:78:6:void actuators::BLHelis::Actuate_Motor_3()	16	static
-../Core/Src/actuators/blhelis.cpp:81:6:void actuators::BLHelis::Actuate_Motor_4()	16	static
-../Core/Src/actuators/blhelis.cpp:85:6:void actuators::BLHelis::Start()	24	static
-../Core/Src/actuators/blhelis.cpp:93:6:void actuators::BLHelis::Update_Motor_SP(actuators::motor_sp)	24	static
-../Core/Src/actuators/blhelis.cpp:100:6:void actuators::BLHelis::Set_Thrust_Percent(float*)	32	static
+../Core/Src/actuators/blhelis.cpp:14:1:actuators::BLHelis::BLHelis(TIM_HandleTypeDef&)	16	static
+../Core/Src/actuators/blhelis.cpp:17:6:void actuators::BLHelis::Init_Motors()	32	static
+../Core/Src/actuators/blhelis.cpp:52:6:void actuators::BLHelis::actuateMotors(state::QuadControlActions&)	16	static
+../Core/Src/actuators/blhelis.cpp:69:6:void actuators::BLHelis::Actuate_Motor_1()	16	static
+../Core/Src/actuators/blhelis.cpp:73:6:void actuators::BLHelis::Actuate_Motor_2()	16	static
+../Core/Src/actuators/blhelis.cpp:76:6:void actuators::BLHelis::Actuate_Motor_3()	16	static
+../Core/Src/actuators/blhelis.cpp:79:6:void actuators::BLHelis::Actuate_Motor_4()	16	static
+../Core/Src/actuators/blhelis.cpp:83:6:void actuators::BLHelis::Start()	24	static
+../Core/Src/actuators/blhelis.cpp:91:6:void actuators::BLHelis::Update_Motor_SP(actuators::motor_sp)	24	static
+../Core/Src/actuators/blhelis.cpp:98:6:void actuators::BLHelis::Set_Thrust_Percent(float*)	32	static

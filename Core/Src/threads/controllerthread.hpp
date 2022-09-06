@@ -11,6 +11,11 @@
 #include "../controllers/controllers.hpp"
 #include "../state/state.hpp"
 #include "cmsis_os.h"
+#include "./mutexes.hpp"
+
+//extern SemaphoreHandle_t xSharedStateMutex;
+//extern SemaphoreHandle_t xSharedOutputMutex;
+//extern SemaphoreHandle_t xInitializerMutex;
 
 namespace threads{
 

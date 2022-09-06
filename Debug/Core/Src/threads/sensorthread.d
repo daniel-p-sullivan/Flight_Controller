@@ -52,7 +52,8 @@ Core/Src/threads/sensorthread.o: ../Core/Src/threads/sensorthread.cpp \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h \
- ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h \
+ ../Core/Src/threads/./mutexes.hpp
 ../Core/Src/threads/sensorthread.hpp:
 ../Core/Src/threads/../state/state.hpp:
 ../Core/Src/threads/../sensors/sensors.hpp:
@@ -108,3 +109,4 @@ Core/Src/threads/sensorthread.o: ../Core/Src/threads/sensorthread.cpp \
 ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h:
+../Core/Src/threads/./mutexes.hpp:

@@ -11,16 +11,19 @@
 #include "../state/state.hpp"
 #include "../sensors/sensors.hpp"
 #include "../sensors/bno055.hpp"
+#include "./mutexes.hpp"
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 
+extern SemaphoreHandle_t xSharedStateMutex;
+extern SemaphoreHandle_t xInitializerMutex;
 
 namespace threads{
 
 
 struct sensorThreadArgs{
 	state::QuadStateVector* state;
-	sensors::BNO055* imu;
+	I2C_HandleTypeDef i2c;
 	SemaphoreHandle_t* pxSharedStateMutex;
 	SemaphoreHandle_t* pxInitializerMutex;
 };

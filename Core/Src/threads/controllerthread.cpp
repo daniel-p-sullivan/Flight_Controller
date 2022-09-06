@@ -21,9 +21,9 @@ void controllerThread(void* pvParameters){
 	state::QuadControlActions localOutput;
 	state::QuadStateVector* globalStateRef = ((controllerThreadArgs*)pvParameters)->state;
 	state::QuadControlActions* globalOutputRef = ((controllerThreadArgs*)pvParameters)->output;
-	SemaphoreHandle_t xSharedStateMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedStateMutex);
-	SemaphoreHandle_t xSharedOutputMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedOutputMutex);
-	SemaphoreHandle_t xInitializerMutex = *(((controllerThreadArgs*)pvParameters)->pxInitializerMutex);
+	//SemaphoreHandle_t xSharedStateMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedStateMutex);
+	//SemaphoreHandle_t xSharedOutputMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedOutputMutex);
+	//SemaphoreHandle_t xInitializerMutex = *(((controllerThreadArgs*)pvParameters)->pxInitializerMutex);
 	const TickType_t xFrequency = 1000;
 	TickType_t xLastWakeTime;
 

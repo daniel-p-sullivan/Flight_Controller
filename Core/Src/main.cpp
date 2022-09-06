@@ -35,6 +35,7 @@
 #include "./threads/sensorthread.hpp"
 #include "./comms/nrf24.hpp"
 #include "./threads/initializerthread.hpp"
+#include "./threads/mutexes.hpp"
 
 /* USER CODE END Includes */
 
@@ -54,16 +55,20 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c1;
-
 SPI_HandleTypeDef hspi2;
-
 TIM_HandleTypeDef htim8;
 TIM_HandleTypeDef htim10;
-
-
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
-static int counter;
+
+//extern SemaphoreHandle_t xSharedStateMutex;
+//extern SemaphoreHandle_t xSharedOutputMutex;
+//extern SemaphoreHandle_t xInitializerMutex;
+
+//shared state and controller variables
+state::QuadStateVector sharedState;
+state::QuadControlActions sharedOutput;
+
 //PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
 /* USER CODE BEGIN PV */
@@ -80,6 +85,7 @@ static void MX_TIM8_Init(void);
 static void MX_UART4_Init(void);
 static void MX_TIM10_Init(void);
 void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName);
+void initializeMutexes(void);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -123,15 +129,12 @@ int main(void)
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 
-  I2C_HandleTypeDef* phi2c1 = &hi2c1;
   I2C_HandleTypeDef& rhi2c1 = hi2c1;
+  TIM_HandleTypeDef& rhtim8 = htim8;
+  SPI_HandleTypeDef& rhspi2 = hspi2;
 
   /* USER CODE END 2 */
 
-  //required devices
-  sensors::BNO055 imu(rhi2c1);
-  actuators::BLHelis motors(htim8);
-  communications::NRF24 comms(hspi2);
 
   //thread arguments
   threads::controllerThreadArgs controllerArgs;
@@ -139,14 +142,8 @@ int main(void)
   threads::sensorThreadArgs sensorArgs;
   threads::initializerThreadArgs initializerArgs;
 
-  //create the mutexes
-  SemaphoreHandle_t xSharedStateMutex = xSemaphoreCreateMutex();
-  SemaphoreHandle_t xSharedOutputMutex = xSemaphoreCreateMutex();
-  SemaphoreHandle_t xInitializerMutex = xSemaphoreCreateMutex();
-
-  //shared state and controller variables
-  state::QuadStateVector sharedState;
-  state::QuadControlActions sharedOutput;
+  //initialize the mutexes
+  initializeMutexes();
 
   //thread handles and creation retvar
   TaskHandle_t xSensorThreadHandle;
@@ -172,47 +169,48 @@ int main(void)
   sensorArgs.state = &sharedState;
   sensorArgs.pxSharedStateMutex = &xSharedStateMutex;
   sensorArgs.pxInitializerMutex = &xInitializerMutex;
+  sensorArgs.i2c = hi2c1;
 
   //actuator thread arguments
   actuatorArgs.pxSharedOutputMutex = &xSharedOutputMutex;
-  actuatorArgs.motors = &motors;
+//  actuatorArgs.motors = &motors;
   actuatorArgs.output = &sharedOutput;
   actuatorArgs.pxInitializerMutex = &xInitializerMutex;
 
   //initializer thread arguments
-  initializerArgs.pxIMU = &imu;
-  initializerArgs.pxComms = &comms;
-  initializerArgs.pxMotors = &motors;
+//  initializerArgs.pxIMU = &imu;
+//  initializerArgs.pxComms = &comms;
+//  initializerArgs.pxMotors = &motors;
   initializerArgs.pxInitializerMutex = &xInitializerMutex;
   initializerArgs.pxInitializerThreadHandle = &xInitializerThreadHandle;
 
   //create all tasks
-  xRet = xTaskCreate(threads::initializerThread,
-		             "initializerThread",
-					 1024,
-					 (void*)&initializerArgs,
-					 configMAX_PRIORITIES-1, //highest prio, will run first
-					 &xInitializerThreadHandle);
+//  xRet = xTaskCreate(threads::initializerThread,
+//		             "initializerThread",
+//					 1024,
+//					 (void*)&initializerArgs,
+//					 2, //highest prio, will run first
+//					 &xInitializerThreadHandle);
 
   xRet = xTaskCreate(threads::sensorThread,
   	  	  			 "sensorThread",
   	  	  			 1024,
   	  	  			 (void*)&sensorArgs,
-  	  	  			 configMAX_PRIORITIES-2,
+  	  	  			 2,
   	  	  			 &xSensorThreadHandle);
 
   xRet = xTaskCreate(threads::controllerThread,
   	  	  		     "controllerThread",
   					 1024,
   					 (void*)&controllerArgs,
-  					 configMAX_PRIORITIES-2,
+  					 1,
   					 &xControllerThreadHandle);
 
   xRet = xTaskCreate(threads::actuatorThread,
   	  	  			 "actuatorThread",
   					 1024,
   	  	  			 (void*)&actuatorArgs,
-  					 configMAX_PRIORITIES-2,
+  					 1,
   	  	  			 &xActuatorThreadHandle);
 
   //start the RTOS
@@ -235,9 +233,15 @@ int main(void)
   /* USER CODE END 3 */
 }
 
-/*stackoverflow checking*/
+/*stack overflow checking*/
 void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName){
 	while(1){};
+}
+
+void initializeMutexes(void){
+	xSharedStateMutex = xSemaphoreCreateMutex();
+	xSharedOutputMutex = xSemaphoreCreateMutex();
+	xInitializerMutex = xSemaphoreCreateMutex();
 }
 
 
@@ -597,9 +601,7 @@ static void MX_GPIO_Init(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
   /* USER CODE BEGIN Callback 0 */
-  if (htim->Instance == TIM10){
-	  counter++;
-  }
+
   /* USER CODE END Callback 0 */
   if (htim->Instance == TIM6) {
     HAL_IncTick();

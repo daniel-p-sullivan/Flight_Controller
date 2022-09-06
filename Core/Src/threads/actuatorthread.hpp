@@ -14,6 +14,10 @@
 #include "../actuators/blhelis.hpp"
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
+#include "./mutexes.hpp"
+
+//extern SemaphoreHandle_t xInitializerMutex;
+//extern SemaphoreHandle_t xSharedOutputMutex;
 
 
 namespace threads{

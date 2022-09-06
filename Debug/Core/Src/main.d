@@ -63,6 +63,7 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Core/Src/./threads/../actuators/blhelis.hpp \
  ../Core/Src/./threads/../actuators/actuators.hpp \
  ../Core/Src/./threads/../actuators/../state/state.hpp \
+ ../Core/Src/./threads/./mutexes.hpp \
  ../Core/Src/./threads/controllerthread.hpp \
  ../Core/Src/./threads/../controllers/controllers.hpp \
  ../Core/Src/./threads/sensorthread.hpp \
@@ -139,6 +140,7 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Core/Src/./threads/../actuators/blhelis.hpp:
 ../Core/Src/./threads/../actuators/actuators.hpp:
 ../Core/Src/./threads/../actuators/../state/state.hpp:
+../Core/Src/./threads/./mutexes.hpp:
 ../Core/Src/./threads/controllerthread.hpp:
 ../Core/Src/./threads/../controllers/controllers.hpp:
 ../Core/Src/./threads/sensorthread.hpp:

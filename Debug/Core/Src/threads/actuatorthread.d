@@ -52,7 +52,8 @@ Core/Src/threads/actuatorthread.o: ../Core/Src/threads/actuatorthread.cpp \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h \
- ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
+ ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h \
+ ../Core/Src/threads/./mutexes.hpp
 ../Core/Src/threads/actuatorthread.hpp:
 ../Core/Src/threads/../actuators/actuators.hpp:
 ../Core/Inc/main.h:
@@ -108,3 +109,4 @@ Core/Src/threads/actuatorthread.o: ../Core/Src/threads/actuatorthread.cpp \
 ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h:
+../Core/Src/threads/./mutexes.hpp:
