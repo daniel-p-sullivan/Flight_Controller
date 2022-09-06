@@ -34,7 +34,7 @@ bool BNO055::configSensor(void){
 	return true;
 }
 
-bool BNO055::Read_IMU_Calib_Status(void){
+bool BNO055::readImuCalibStatus(void){
 
 	static uint16_t calib_stat_address = 0x35;
 	static uint8_t IMU_full_calib = 0x3C;
@@ -42,7 +42,7 @@ bool BNO055::Read_IMU_Calib_Status(void){
 	static HAL_StatusTypeDef hal_status;
 
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_CALIB_STAT_R, I2C_MEMADD_SIZE_8BIT, &calib, I2C_MEMADD_SIZE_8BIT, (uint32_t)1000000);
-	vTaskDelay(1);
+	//vTaskDelay(1);
 
 	if(hal_status != HAL_OK){
 

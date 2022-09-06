@@ -27,9 +27,9 @@ class BLHelis : Motors{
 public:
 	BLHelis(TIM_HandleTypeDef& htim8);
 	void actuateMotors(state::QuadControlActions& ac);
+	void initMotors(void);
 private:
 	TIM_HandleTypeDef& timer;
-	void Init_Motors(void);
 	void Start(void);
 	void Set_Thrust_Percent(float *percent);
 	void Update_Motor_SP(motor_sp msp);

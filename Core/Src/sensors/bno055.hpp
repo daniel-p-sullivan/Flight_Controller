@@ -79,7 +79,7 @@ class BNO055 : IMU{
 public:
 	BNO055(I2C_HandleTypeDef& rhi2c1);
 	bool configSensor(void);
-	bool Read_IMU_Calib_Status(void);
+	bool readImuCalibStatus(void);
 	bool Write_IMU_Calib_Params(void);
 	bool Read_Calib_Params(void);
 	state::QuadStateVector& readIMU(void);

@@ -14,7 +14,7 @@ namespace actuators{
 BLHelis::BLHelis(TIM_HandleTypeDef& rhtim8) : timer(rhtim8){}
 
 
-void BLHelis::Init_Motors(void){
+void BLHelis::initMotors(void){
 	HAL_TIM_Base_Start(&(this->timer));
 	HAL_TIM_PWM_Start(&(this->timer), TIM_CHANNEL_1);
 	HAL_TIM_PWM_Start(&(this->timer), TIM_CHANNEL_2);
@@ -24,13 +24,11 @@ void BLHelis::Init_Motors(void){
 	static uint16_t mc1_h = MOTOR_13MS;
 	static uint16_t mc1 = 0;
 	static uint16_t step_count = 1000;
-	static uint8_t delay = 10;
+	static uint8_t delay = 1;
 	float step = (mc1_h - mc1_l) / step_count;
 
 	motor_sp msp;
 
-	//delay for motor startup????
-	//vTaskDelay(10000);
 	for(uint16_t i = 0; i < (step_count/2); i++){
 		mc1 = mc1_l + i * (int)step;
 		msp = {mc1, mc1, mc1, mc1};
