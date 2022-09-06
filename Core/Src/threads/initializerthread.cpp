@@ -13,8 +13,8 @@ namespace threads{
 
 void initializerThread(void* pvParameters){
 
-	//disable irq until this thread completes
-	portENTER_CRITICAL();
+	//disable preemption until this thread completes
+	vTaskSuspendAll();
 
 	//system state variable
 	enum System_State sys_state = INIT;
@@ -29,7 +29,6 @@ void initializerThread(void* pvParameters){
 	TaskHandle_t* localHandle = ((initializerThreadArgs*)pvParameters)->pxInitializerThreadHandle;
 
 	auto retvar = xSemaphoreTake(xInitializerMutex, (TickType_t)0);
-	vTaskDelay(10000);
 
 	//initializer thread is a state machine
 	while(1){
@@ -38,7 +37,6 @@ void initializerThread(void* pvParameters){
 
 			  	  case INIT:
 			  	  	  {
-			  	  		  vTaskDelay(100);
 			  	  		  imu_config_flag = localImuRef->configSensor();
 
 			  	  		  if(imu_config_flag){
@@ -111,7 +109,7 @@ void initializerThread(void* pvParameters){
 	//give back the initialization semaphore, unblocking the other threads
 	xSemaphoreGive(&xInitializerMutex);
 	vTaskDelete(*localHandle); //deletes self
-	portEXIT_CRITICAL();
+	xTaskResumeAll();
 
 }
 

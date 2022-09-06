@@ -79,6 +79,7 @@ static void MX_SPI2_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_UART4_Init(void);
 static void MX_TIM10_Init(void);
+void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -233,6 +234,12 @@ int main(void)
   }
   /* USER CODE END 3 */
 }
+
+/*stackoverflow checking*/
+void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName){
+	while(1){};
+}
+
 
 /**
   * @brief System Clock Configuration
