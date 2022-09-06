@@ -23,7 +23,7 @@ void sensorThread(void* pvParameters){
 	const TickType_t xFrequency = 1000; //scheduler is running at 1Khz, this thread will be able to run at that freq too
 	TickType_t xLastWakeTime;
 
-	xSemaphoreTake(xInitializerMutex, (TickType_t)0); //needs to get this mutex to continue exec
+	auto retvar = xSemaphoreTake(xInitializerMutex, (TickType_t)1000); //needs to get this mutex to continue exec
 															  //cannot grab this until initialization is done
 	xSemaphoreGive(xInitializerMutex); //proceed into inf loop now that initialization is done
 

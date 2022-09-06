@@ -28,7 +28,7 @@ void controllerThread(void* pvParameters){
 	TickType_t xLastWakeTime;
 
 
-	xSemaphoreTake(xInitializerMutex, (TickType_t)0); //needs to get this mutex to continue exec
+	xSemaphoreTake(xInitializerMutex, (TickType_t)1000); //needs to get this mutex to continue exec
 														  //cannot grab this until initialization is done
 	xSemaphoreGive(xInitializerMutex); //proceed into inf loop now that initialization is done
 

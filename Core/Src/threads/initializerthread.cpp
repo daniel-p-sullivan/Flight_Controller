@@ -13,6 +13,8 @@ namespace threads{
 
 void initializerThread(void* pvParameters){
 
+	//disable irq until this thread completes
+	portENTER_CRITICAL();
 
 	//system state variable
 	enum System_State sys_state = INIT;
@@ -24,8 +26,10 @@ void initializerThread(void* pvParameters){
 	actuators::BLHelis* localMotorsRef = ((initializerThreadArgs*)pvParameters)->pxMotors;
 	communications::NRF24* localCommsRef = ((initializerThreadArgs*)pvParameters)->pxComms;
 	SemaphoreHandle_t xInitializerMutex = *((initializerThreadArgs*)pvParameters)->pxInitializerMutex;
+	TaskHandle_t* localHandle = ((initializerThreadArgs*)pvParameters)->pxInitializerThreadHandle;
 
-	xSemaphoreTake(xInitializerMutex, (TickType_t)0);
+	auto retvar = xSemaphoreTake(xInitializerMutex, (TickType_t)0);
+	vTaskDelay(10000);
 
 	//initializer thread is a state machine
 	while(1){
@@ -34,6 +38,7 @@ void initializerThread(void* pvParameters){
 
 			  	  case INIT:
 			  	  	  {
+			  	  		  vTaskDelay(100);
 			  	  		  imu_config_flag = localImuRef->configSensor();
 
 			  	  		  if(imu_config_flag){
@@ -105,7 +110,8 @@ void initializerThread(void* pvParameters){
 
 	//give back the initialization semaphore, unblocking the other threads
 	xSemaphoreGive(&xInitializerMutex);
-	vTaskDelete(NULL); //deletes self
+	vTaskDelete(*localHandle); //deletes self
+	portEXIT_CRITICAL();
 
 }
 

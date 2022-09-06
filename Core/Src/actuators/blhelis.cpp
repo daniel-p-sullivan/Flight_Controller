@@ -32,23 +32,23 @@ void BLHelis::Init_Motors(void){
 	motor_sp msp;
 
 	//delay for motor startup????
-	//HAL_Delay(10000);
+	//vTaskDelay(10000);
 	for(uint16_t i = 0; i < (step_count/2); i++){
 		mc1 = mc1_l + i * (int)step;
 		msp = {mc1, mc1, mc1, mc1};
 		this->Update_Motor_SP(msp);
-		HAL_Delay(delay);
+		vTaskDelay(delay);
 	}
 	for(uint16_t i = 0; i < (step_count/2); i++){
 		mc1 = mc1_h - i * (int)step;
 		msp = {mc1, mc1, mc1, mc1};
 		this->Update_Motor_SP(msp);
-		HAL_Delay(delay);
+		vTaskDelay(delay);
 	}
 	mc1 = mc1_l;
 	msp = {mc1, mc1, mc1, mc1};
 	this->Update_Motor_SP(msp);
-	HAL_Delay(2000);
+	vTaskDelay(2000);
 }
 
 void BLHelis::actuateMotors(state::QuadControlActions& ac){
@@ -86,7 +86,7 @@ void BLHelis::Start(void){
 	static uint16_t mc = MOTOR_1MS;
 	motor_sp msp = {mc, mc, mc, mc};
 	this->Update_Motor_SP(msp);
-	HAL_Delay(2000);
+	vTaskDelay(2000);
 
 }
 

@@ -45,7 +45,7 @@ NRF24::NRF24(SPI_HandleTypeDef spi) : p0_address{0xe7, 0xe7, 0xe7, 0xe7, 0xe7}{
 	while(size_readback != PAYLOAD_SIZE){
 		//write the payload size and verify
 		Set_Payload_Size(PAYLOAD_SIZE);
-		HAL_Delay(3);
+		vTaskDelay(3);
 		Read_Register((uint8_t)RX_PW_P0, &size_readback);
 	}
 
@@ -55,7 +55,7 @@ NRF24::NRF24(SPI_HandleTypeDef spi) : p0_address{0xe7, 0xe7, 0xe7, 0xe7, 0xe7}{
 	while(!array_eq(p0_address_readback, this->p0_address, (uint8_t)5)){
 		//write the address for pipe0, verify it's correct
 		Write_MB_Register((uint8_t)RX_ADDR_P0, this->p0_address, sizeof(this->p0_address));
-		HAL_Delay(3);
+		vTaskDelay(3);
 		Read_MB_Register((uint8_t)RX_ADDR_P0, p0_address_readback, sizeof(this->p0_address));
 	}
 
@@ -69,7 +69,7 @@ NRF24::NRF24(SPI_HandleTypeDef spi) : p0_address{0xe7, 0xe7, 0xe7, 0xe7, 0xe7}{
 	while(config_readback != config_data){
 		//write the config and verify
 		Write_Register((uint8_t)CONFIG, &config_data);
-		HAL_Delay(3);
+		vTaskDelay(3);
 		Read_Register((uint8_t)CONFIG, &config_readback);
 
 	}
@@ -159,7 +159,7 @@ void NRF24::Read_Payload(void){
 	Begin_SPI();
 
 
-	HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive(this->spi, payload_tx_buf, payload_data_buf, PAYLOAD_SIZE+1, (uint32_t)1000);
+	HAL_StatusTypeDef hal_status = HAL_SPI_TransmitReceive(this->spi, this->payload_tx_buf, this->payload_data_buf, PAYLOAD_SIZE+1, (uint32_t)1000);
 //	hal_status = HAL_SPI_Transmit(this->spi, &this->R_RX_PAYLOAD, 1, (uint32_t)10);
 //	for(int i = 0; i < PAYLOAD_SIZE+1; i++){
 //		hal_status = HAL_SPI_Receive(this->spi, &data[i], 1, (uint32_t)10);
@@ -217,12 +217,12 @@ void NRF24::Set_Data_Rate(enum nrf24_speed s){
 void NRF24::Begin_SPI(void){
 	//bring CSN low to select the comms
 	HAL_GPIO_WritePin(NRF24_CSN_GPIO_Port, NRF24_CSN_Pin, GPIO_PIN_RESET);
-	HAL_Delay(1);
+	vTaskDelay(1);
 }
 void NRF24::End_SPI(void){
 	//deselect the comms by setting CSN high
 	HAL_GPIO_WritePin(NRF24_CSN_GPIO_Port, NRF24_CSN_Pin, GPIO_PIN_SET);
-	HAL_Delay(1);
+
 }
 
 void NRF24::Flush_RX(void){

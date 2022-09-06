@@ -95,7 +95,6 @@ static void MX_TIM10_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  counter = 0;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -123,11 +122,13 @@ int main(void)
   MX_UART4_Init();
   /* USER CODE BEGIN 2 */
 
+  I2C_HandleTypeDef* phi2c1 = &hi2c1;
+  I2C_HandleTypeDef& rhi2c1 = hi2c1;
 
   /* USER CODE END 2 */
 
   //required devices
-  sensors::BNO055 imu(hi2c1);
+  sensors::BNO055 imu(rhi2c1);
   actuators::BLHelis motors(htim8);
   communications::NRF24 comms(hspi2);
 
@@ -138,15 +139,23 @@ int main(void)
   threads::initializerThreadArgs initializerArgs;
 
   //create the mutexes
-  SemaphoreHandle_t xSharedStateMutex = xSemaphoreCreateBinary();
-  SemaphoreHandle_t xSharedOutputMutex = xSemaphoreCreateBinary();
-  SemaphoreHandle_t xInitializerMutex = xSemaphoreCreateBinary();
+  SemaphoreHandle_t xSharedStateMutex = xSemaphoreCreateMutex();
+  SemaphoreHandle_t xSharedOutputMutex = xSemaphoreCreateMutex();
+  SemaphoreHandle_t xInitializerMutex = xSemaphoreCreateMutex();
 
   //shared state and controller variables
   state::QuadStateVector sharedState;
   state::QuadControlActions sharedOutput;
 
-  //open them
+  //thread handles and creation retvar
+  TaskHandle_t xSensorThreadHandle;
+  TaskHandle_t xActuatorThreadHandle;
+  TaskHandle_t xControllerThreadHandle;
+  TaskHandle_t xInitializerThreadHandle;
+  BaseType_t xRet;
+
+
+  //open the mutexes
   xSemaphoreGive(xSharedStateMutex);
   xSemaphoreGive(xSharedOutputMutex);
   xSemaphoreGive(xInitializerMutex);
@@ -174,41 +183,35 @@ int main(void)
   initializerArgs.pxComms = &comms;
   initializerArgs.pxMotors = &motors;
   initializerArgs.pxInitializerMutex = &xInitializerMutex;
-
-  TaskHandle_t xSensorThreadHandle;
-  TaskHandle_t xActuatorThreadHandle;
-  TaskHandle_t xControllerThreadHandle;
-  TaskHandle_t xInitializerThreadHandle;
-
-  BaseType_t xRet;
+  initializerArgs.pxInitializerThreadHandle = &xInitializerThreadHandle;
 
   //create all tasks
   xRet = xTaskCreate(threads::initializerThread,
 		             "initializerThread",
-					 256,
+					 1024,
 					 (void*)&initializerArgs,
-					 configMAX_PRIORITIES-2, //lowest prio, will run first
+					 configMAX_PRIORITIES-1, //highest prio, will run first
 					 &xInitializerThreadHandle);
 
   xRet = xTaskCreate(threads::sensorThread,
   	  	  			 "sensorThread",
-  	  	  			 256,
+  	  	  			 1024,
   	  	  			 (void*)&sensorArgs,
-  	  	  			 configMAX_PRIORITIES-1,
+  	  	  			 configMAX_PRIORITIES-2,
   	  	  			 &xSensorThreadHandle);
 
   xRet = xTaskCreate(threads::controllerThread,
   	  	  		     "controllerThread",
-  					 256,
+  					 1024,
   					 (void*)&controllerArgs,
-  					 configMAX_PRIORITIES-1,
+  					 configMAX_PRIORITIES-2,
   					 &xControllerThreadHandle);
 
   xRet = xTaskCreate(threads::actuatorThread,
   	  	  			 "actuatorThread",
-  					 256,
+  					 1024,
   	  	  			 (void*)&actuatorArgs,
-  					 configMAX_PRIORITIES-1,
+  					 configMAX_PRIORITIES-2,
   	  	  			 &xActuatorThreadHandle);
 
   //start the RTOS
@@ -681,7 +684,7 @@ void assert_failed(uint8_t *file, uint32_t line)
 		//
 		//		  			  for(int i = 0; i < 10; i++){
 		//		  				  	HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-		//		  				  	HAL_Delay(500);
+//		  				  	HAL_Delay(500);
 		//		  			  }
 
 

@@ -38,6 +38,7 @@ struct initializerThreadArgs{
 	actuators::BLHelis* pxMotors;
 	communications::NRF24* pxComms;
 	SemaphoreHandle_t* pxInitializerMutex;
+	TaskHandle_t* pxInitializerThreadHandle;
 };
 
 

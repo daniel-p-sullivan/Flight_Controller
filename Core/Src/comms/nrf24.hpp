@@ -10,6 +10,8 @@
 
 #include <cstdint>
 #include "communications.hpp"
+#include "FreeRTOS.h"
+#include "cmsis_os.h"
 
 //register defines
 #define CONFIG 	 	0x00
@@ -64,7 +66,7 @@ private:
 	static const uint8_t FLUSH_RX = 0b11100010;
 
 	//payload transmit and receive buffers
-	static uint8_t payload_tx_buf[PAYLOAD_SIZE+1];
+	uint8_t payload_tx_buf[PAYLOAD_SIZE+1];
 	static uint8_t payload_data_buf[PAYLOAD_SIZE+1];
 	static uint8_t data[PAYLOAD_SIZE+1];
 

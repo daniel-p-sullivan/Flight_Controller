@@ -15,6 +15,8 @@
 
 #include "sensors.hpp"
 #include "../state/state.hpp"
+#include "FreeRTOS.h"
+#include "cmsis_os.h"
 
 //pin/port defines
 #define I2C1_SCL_PORT GPIOB
@@ -75,15 +77,15 @@ namespace sensors{
 
 class BNO055 : IMU{
 public:
-	BNO055(I2C_HandleTypeDef hi2c1);
+	BNO055(I2C_HandleTypeDef& rhi2c1);
 	bool configSensor(void);
 	bool Read_IMU_Calib_Status(void);
 	bool Write_IMU_Calib_Params(void);
 	bool Read_Calib_Params(void);
 	state::QuadStateVector& readIMU(void);
 private:
-	I2C_HandleTypeDef i2c;
-	void I2C1_ClearBusyFlagErratum(I2C_HandleTypeDef *instance);
+	I2C_HandleTypeDef& i2c;
+	void I2C1_ClearBusyFlagErratum(void);
 };
 
 }
