@@ -30,12 +30,9 @@
 #include "./comms/communications.hpp"
 #include "./controllers/controllers.hpp"
 #include "./sensors/sensors.hpp"
-#include "./threads/actuatorthread.hpp"
-#include "./threads/controllerthread.hpp"
-#include "./threads/sensorthread.hpp"
+#include "./actuators/blhelis.hpp"
+#include "./sensors/bno055.hpp"
 #include "./comms/nrf24.hpp"
-#include "./threads/initializerthread.hpp"
-#include "./threads/mutexes.hpp"
 
 /* USER CODE END Includes */
 
@@ -61,13 +58,35 @@ TIM_HandleTypeDef htim10;
 UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
 
-//extern SemaphoreHandle_t xSharedStateMutex;
-//extern SemaphoreHandle_t xSharedOutputMutex;
-//extern SemaphoreHandle_t xInitializerMutex;
+SemaphoreHandle_t xSharedStateMutex;
+SemaphoreHandle_t xSharedOutputMutex;
+SemaphoreHandle_t xInitializerMutex;
 
 //shared state and controller variables
 state::QuadStateVector sharedState;
 state::QuadControlActions sharedOutput;
+
+struct actuatorThreadArgs{
+	state::QuadControlActions* output;
+	actuators::BLHelis* motors;
+	SemaphoreHandle_t* pxSharedOutputMutex;
+	SemaphoreHandle_t* pxInitializerMutex;
+};
+
+struct sensorThreadArgs{
+	state::QuadStateVector* state;
+	I2C_HandleTypeDef i2c;
+	SemaphoreHandle_t* pxSharedStateMutex;
+	SemaphoreHandle_t* pxInitializerMutex;
+};
+
+struct controllerThreadArgs{
+	state::QuadStateVector* state;
+	state::QuadControlActions* output;
+	SemaphoreHandle_t* pxSharedStateMutex;
+	SemaphoreHandle_t* pxSharedOutputMutex;
+	SemaphoreHandle_t* pxInitializerMutex;
+};
 
 //PCD_HandleTypeDef hpcd_USB_OTG_FS;
 
@@ -84,6 +103,9 @@ static void MX_SPI2_Init(void);
 static void MX_TIM8_Init(void);
 static void MX_UART4_Init(void);
 static void MX_TIM10_Init(void);
+void sensorThread(void* pvParameters);
+void actuatorThread(void* pvParameters);
+void controllerThread(void* pvParameters);
 void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName);
 void initializeMutexes(void);
 /* USER CODE BEGIN PFP */
@@ -137,13 +159,15 @@ int main(void)
 
 
   //thread arguments
-  threads::controllerThreadArgs controllerArgs;
-  threads::actuatorThreadArgs actuatorArgs;
-  threads::sensorThreadArgs sensorArgs;
-  threads::initializerThreadArgs initializerArgs;
+  controllerThreadArgs controllerArgs;
+  actuatorThreadArgs actuatorArgs;
+  sensorThreadArgs sensorArgs;
+  //initializerThreadArgs initializerArgs;
 
   //initialize the mutexes
-  initializeMutexes();
+  xSharedStateMutex = xSemaphoreCreateMutex();
+  xSharedOutputMutex = xSemaphoreCreateMutex();
+  xInitializerMutex = xSemaphoreCreateMutex();
 
   //thread handles and creation retvar
   TaskHandle_t xSensorThreadHandle;
@@ -180,9 +204,9 @@ int main(void)
   //initializer thread arguments
 //  initializerArgs.pxIMU = &imu;
 //  initializerArgs.pxComms = &comms;
-//  initializerArgs.pxMotors = &motors;
-  initializerArgs.pxInitializerMutex = &xInitializerMutex;
-  initializerArgs.pxInitializerThreadHandle = &xInitializerThreadHandle;
+////  initializerArgs.pxMotors = &motors;
+//  initializerArgs.pxInitializerMutex = &xInitializerMutex;
+//  initializerArgs.pxInitializerThreadHandle = &xInitializerThreadHandle;
 
   //create all tasks
 //  xRet = xTaskCreate(threads::initializerThread,
@@ -192,21 +216,21 @@ int main(void)
 //					 2, //highest prio, will run first
 //					 &xInitializerThreadHandle);
 
-  xRet = xTaskCreate(threads::sensorThread,
+  xRet = xTaskCreate(sensorThread,
   	  	  			 "sensorThread",
   	  	  			 1024,
   	  	  			 (void*)&sensorArgs,
   	  	  			 2,
   	  	  			 &xSensorThreadHandle);
 
-  xRet = xTaskCreate(threads::controllerThread,
+  xRet = xTaskCreate(controllerThread,
   	  	  		     "controllerThread",
   					 1024,
   					 (void*)&controllerArgs,
   					 1,
   					 &xControllerThreadHandle);
 
-  xRet = xTaskCreate(threads::actuatorThread,
+  xRet = xTaskCreate(actuatorThread,
   	  	  			 "actuatorThread",
   					 1024,
   	  	  			 (void*)&actuatorArgs,
@@ -233,15 +257,165 @@ int main(void)
   /* USER CODE END 3 */
 }
 
+void sensorThread(void* pvParameters){
+
+	state::QuadStateVector localState;
+	state::QuadStateVector* globalStateRef = ((sensorThreadArgs*)pvParameters)->state;
+	I2C_HandleTypeDef& refI2c = ((sensorThreadArgs*)pvParameters)->i2c;
+	sensors::BNO055 imu(refI2c);
+	//SemaphoreHandle_t xSharedStateMutex = *(((sensorThreadArgs*)pvParameters)->pxSharedStateMutex);
+	//SemaphoreHandle_t xInitializerMutex = *(((sensorThreadArgs*)pvParameters)->pxInitializerMutex);
+
+	const TickType_t xFrequency = 1000; //scheduler is running at 1Khz, this thread will be able to run at that freq too
+	TickType_t xLastWakeTime;
+
+	auto retvar = xSemaphoreTake(xInitializerMutex, (TickType_t)0); //needs to get this mutex to continue exec
+															  //cannot grab this until initialization is done
+	bool imu_config_flag = false; bool imu_calib_flag = false;
+	int state = 0;
+	while(1){
+
+			switch(state){
+			case 0:
+			{
+				imu_config_flag = imu.configSensor();
+
+				if(imu_config_flag){
+					state = 1;
+				}
+
+			}break;
+			case 1:
+			{
+				imu_calib_flag = imu.Read_IMU_Calib_Status();
+				bool test = imu.Read_Calib_Params();
+
+				if(imu_calib_flag){
+					break;
+				}
+
+			}break;
+			}
+	}
+
+
+
+
+
+
+
+
+	xSemaphoreGive(xInitializerMutex); //proceed into inf loop now that initialization is done
+
+
+	while(1){
+
+		xLastWakeTime = xTaskGetTickCount();
+		vTaskDelayUntil(&xLastWakeTime, xFrequency); //blocks
+
+
+		localState = imu.readIMU();
+
+		xSemaphoreTake(xSharedStateMutex, (TickType_t) 0);
+		*globalStateRef = localState;
+		xSemaphoreGive(xSharedStateMutex);
+
+	}
+
+}
+
+void controllerThread(void* pvParameters){
+
+
+	control::PI thrustController = control::PI(0, 0.1, 10, 2);
+	control::PI yawController = control::PI(0, 0.1, 10, 2);
+	control::PI rollController = control::PI(0, 0.1, 10, 2);
+	control::PI pitchController = control::PI(0, 0.1, 10, 2);
+	state::QuadStateVector localState;
+	state::QuadControlActions localOutput;
+	state::QuadStateVector* globalStateRef = ((controllerThreadArgs*)pvParameters)->state;
+	state::QuadControlActions* globalOutputRef = ((controllerThreadArgs*)pvParameters)->output;
+	//SemaphoreHandle_t xSharedStateMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedStateMutex);
+	//SemaphoreHandle_t xSharedOutputMutex = *(((controllerThreadArgs*)pvParameters)->pxSharedOutputMutex);
+	//SemaphoreHandle_t xInitializerMutex = *(((controllerThreadArgs*)pvParameters)->pxInitializerMutex);
+	const TickType_t xFrequency = 1000;
+	TickType_t xLastWakeTime;
+
+
+	xSemaphoreTake(xInitializerMutex, (TickType_t)1000); //needs to get this mutex to continue exec
+														  //cannot grab this until initialization is done
+	xSemaphoreGive(xInitializerMutex); //proceed into inf loop now that initialization is done
+
+	while(1){
+		xLastWakeTime = xTaskGetTickCount();
+		vTaskDelayUntil(&xLastWakeTime, xFrequency); //blocks than instantly returns
+
+		xSemaphoreTake(xSharedStateMutex, (TickType_t) 0); //nonblocking
+		localState = *globalStateRef;
+		xSemaphoreGive(xSharedStateMutex);
+
+
+		localOutput.u1 = thrustController.calcOutput(localState.z);
+		localOutput.u2 = rollController.calcOutput(localState.psi);
+		localOutput.u3 = pitchController.calcOutput(localState.theta);
+		localOutput.u4 = yawController.calcOutput(localState.phi);
+
+		xSemaphoreTake(xSharedOutputMutex, (TickType_t) 0);
+		*globalOutputRef = localOutput;
+		xSemaphoreGive(xSharedOutputMutex);
+
+
+
+	}
+
+
+}
+
+void actuatorThread(void* pvParameters){
+
+
+	state::QuadControlActions* globalOutputRef = ((actuatorThreadArgs*)pvParameters)->output;
+	actuators::BLHelis* motorsRef = ((actuatorThreadArgs*)pvParameters)->motors;
+	state::QuadControlActions localOutput;
+	//SemaphoreHandle_t xSharedOutputMutex = *(((actuatorThreadArgs*)pvParameters)->pxSharedOutputMutex);
+	//SemaphoreHandle_t xInitializerMutex = *((actuatorThreadArgs*)pvParameters)->pxInitializerMutex;
+
+	const TickType_t xFrequency = 1000; //scheduler is running at 1Khz, this thread will be able to run at that freq too
+	TickType_t xLastWakeTime;
+
+	xSemaphoreTake(xInitializerMutex, (TickType_t)1000); //needs to get this mutex to continue exec
+													  //cannot grab this until initialization is done
+	xSemaphoreGive(xInitializerMutex); //proceed into inf loop now that initialization is done
+
+	while(1){
+
+		xLastWakeTime = xTaskGetTickCount();
+		vTaskDelayUntil(&xLastWakeTime, xFrequency); //blocks
+
+		//get measurement
+		xSemaphoreTake(xSharedOutputMutex, (TickType_t)0);
+		localOutput = *globalOutputRef; //copy the output into local var then release
+		xSemaphoreGive(xSharedOutputMutex);
+
+		motorsRef->actuateMotors(localOutput);
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
 /*stack overflow checking*/
 void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName){
 	while(1){};
-}
-
-void initializeMutexes(void){
-	xSharedStateMutex = xSemaphoreCreateMutex();
-	xSharedOutputMutex = xSemaphoreCreateMutex();
-	xInitializerMutex = xSemaphoreCreateMutex();
 }
 
 
