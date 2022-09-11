@@ -1,11 +1,11 @@
 c:\st\stm32cubeide_1.10.1\stm32cubeide\plugins\com.st.stm32cube.ide.mcu.externaltools.gnu-tools-for-stm32.10.3-2021.10.win32_1.0.0.202111181127\tools\bin\../lib/gcc/arm-none-eabi/10.3.1/../../../../arm-none-eabi/include/c++/10.3.1/arm-none-eabi/thumb/v7e-m+fp/hard/bits/gthr-default.h:229:1:int __gthread_key_delete(__gthread_key_t)	16	static
 ../Core/Src/sensors/bno055.cpp:13:1:sensors::BNO055::BNO055(I2C_HandleTypeDef&)	16	static
 ../Core/Src/sensors/bno055.cpp:16:6:bool sensors::BNO055::configSensor()	40	static
-../Core/Src/sensors/bno055.cpp:37:6:bool sensors::BNO055::readImuCalibStatus()	32	static
-../Core/Src/sensors/bno055.cpp:69:6:bool sensors::BNO055::Write_IMU_Calib_Params()	32	static
-../Core/Src/sensors/bno055.cpp:88:6:bool sensors::BNO055::Read_Calib_Params()	56	static
-../Core/Src/sensors/bno055.cpp:138:25:state::QuadStateVector& sensors::BNO055::readIMU()	32	static
-../Core/Src/sensors/bno055.cpp:207:6:void sensors::BNO055::I2C1_ClearBusyFlagErratum()	48	static,ignoring_inline_asm
-../Core/Src/sensors/bno055.cpp:326:1:void __static_initialization_and_destruction_0(int, int)	16	static
-../Core/Src/sensors/bno055.cpp:326:1:cpp)	8	static
-../Core/Src/sensors/bno055.cpp:326:1:cpp)	8	static
+../Core/Src/sensors/bno055.cpp:47:6:bool sensors::BNO055::readCalibStatus()	32	static
+../Core/Src/sensors/bno055.cpp:81:6:bool sensors::BNO055::writeCalibParams()	32	static
+../Core/Src/sensors/bno055.cpp:130:6:bool sensors::BNO055::readCalibParams()	56	static
+../Core/Src/sensors/bno055.cpp:194:25:state::QuadStateVector& sensors::BNO055::readIMU()	40	static
+../Core/Src/sensors/bno055.cpp:266:6:void sensors::BNO055::clearBusyFlagErratum()	48	static,ignoring_inline_asm
+../Core/Src/sensors/bno055.cpp:385:1:void __static_initialization_and_destruction_0(int, int)	16	static
+../Core/Src/sensors/bno055.cpp:385:1:cpp)	8	static
+../Core/Src/sensors/bno055.cpp:385:1:cpp)	8	static

@@ -8,6 +8,7 @@
 #ifndef SRC_STATE_STATE_HPP_
 #define SRC_STATE_STATE_HPP_
 
+#include <stdint.h>
 
 namespace state{
 

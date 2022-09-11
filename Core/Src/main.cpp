@@ -22,6 +22,7 @@
 #include "cmsis_os.h"
 #include "FreeRTOS.h"
 #include "task.h"
+#include "string.h"
 
 #include "./actuators/actuators.hpp"
 /* Private includes ----------------------------------------------------------*/
@@ -47,7 +48,8 @@
 
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
-
+#define MOVING_AVERAGE_SIZE 5
+#define RECORD_SIZE 4000
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -58,8 +60,12 @@ UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart2;
 
 SemaphoreHandle_t xSharedStateMutex;
-SemaphoreHandle_t xsharedActionsMutex;
-SemaphoreHandle_t xInitializerMutex;
+SemaphoreHandle_t xSharedActionsMutex;
+SemaphoreHandle_t xSharedRecordMutex;
+
+bool controllerInitFlag;
+bool sensorInitFlag;
+bool actuatorInitFlag;
 
 //shared state and controller variables
 state::QuadStateVector sharedState;
@@ -74,6 +80,8 @@ struct controllerThreadArgs{};
 controllerThreadArgs controllerArgs;
 actuatorThreadArgs actuatorArgs;
 sensorThreadArgs sensorArgs;
+
+int threadRecord[RECORD_SIZE];
 
 //thread handles and creation retvar
 TaskHandle_t xSensorThreadHandle;
@@ -101,6 +109,12 @@ void actuatorThread(void* pvParameters);
 void controllerThread(void* pvParameters);
 void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName);
 void initializeMutexes(void);
+TickType_t HAL_GetTick(void); //overriding weak def
+float zmovingAverage(float newElem);
+float phimovingAverage(float newElem);
+float thetamovingAverage(float newElem);
+static float movAvg[MOVING_AVERAGE_SIZE];
+void writeToThreadRecord(int tID);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -137,17 +151,22 @@ int main(void)
 
   //initialize the mutexes
   xSharedStateMutex = xSemaphoreCreateMutex();
-  xsharedActionsMutex = xSemaphoreCreateMutex();
-  xInitializerMutex = xSemaphoreCreateMutex();
+  xSharedActionsMutex = xSemaphoreCreateMutex();
+  xSharedRecordMutex = xSemaphoreCreateMutex();
+
+  //set the initialization flags to false
+  actuatorInitFlag = false;
+  controllerInitFlag = false;
+  sensorInitFlag = false;
 
   //open the mutexes
   xSemaphoreGive(xSharedStateMutex);
-  xSemaphoreGive(xsharedActionsMutex);
-  xSemaphoreGive(xInitializerMutex);
+  xSemaphoreGive(xSharedActionsMutex);
 
-  //controller thread arguments
-  //sensor thread arguments
-  //actuator thread arguments
+  //zero out the moving average
+  for(int i = 0; i < MOVING_AVERAGE_SIZE; i++){
+	  movAvg[i] = 0.0;
+  }
   //nada
 
 
@@ -176,171 +195,224 @@ int main(void)
   //start the RTOS
   vTaskStartScheduler();
 
-
   //never reaches here
-
-
-
-
-  /* Infinite loop */
   while (1){}
 }
 
 void sensorThread(void* pvParameters){
 
+	enum sensorThreadState{
+		INIT,
+		CALIB,
+		READY,
+		ACTIVE
+	};
+
+	sensorThreadState threadState = INIT;
+
+	int tID = 1;
 	state::QuadStateVector localState;
 	sensors::BNO055 imu(hi2c1);
 
-	const TickType_t xFrequency = 1000; //scheduler is running at 1Khz, this thread will be able to run at that freq too
+	const TickType_t xFrequency = 10; //
 	TickType_t xLastWakeTime;
 
-	bool obtainedInitFlag = pdFALSE;
-	while(!obtainedInitFlag){
-		if(obtainedInitFlag = xSemaphoreTake(xInitializerMutex, xFrequency) == pdTRUE){ //needs to get this mutex to continue exec
-		  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  //cannot grab this until initialization is done)
 
-			vTaskSuspendAll();
-			bool imuConfigFlag = false; bool imuCalibFlag = false;
-				int state = 0;
-				while(!imuCalibFlag){
-					switch(state){
-					case 0:
-					{
-						imuConfigFlag = imu.configSensor();
-						if(imuConfigFlag){
-							state = 1;
-					}
+	bool imuConfigFlag = false; bool imuCalibFlag = false;
+	while(1){
+		switch(threadState){
+			case INIT:
+			{
+				imuConfigFlag = imu.configSensor();
 
-					}break;
-					case 1:
-					{
-						imuCalibFlag = imu.readImuCalibStatus();
-					}break;
-					}
-			}
+				if(imuConfigFlag){
+					sensorInitFlag = true;
+					threadState = READY; //skipping calib for now since we write a stored profile
+				}
+			}break;
+			case CALIB:
+			{
+				imuCalibFlag = imu.readCalibStatus();
 
-			vTaskPrioritySet(xSensorThreadHandle, 1);
-			xSemaphoreGive(xInitializerMutex);
-			xTaskResumeAll();
+				if(imuCalibFlag){
+					sensorInitFlag = true;
+					threadState = READY;
+				}
+
+			}break;
+			case READY:
+			{
+				if(controllerInitFlag && actuatorInitFlag){
+					threadState = ACTIVE;
+				}
+				else{
+					vTaskPrioritySet(xSensorThreadHandle, 0);  //lower prio
+					taskYIELD(); //if the other threads aren't ready, yield to them
+				}
+
+			}break;
+			case ACTIVE:
+			{
+
+				vTaskPrioritySet(xSensorThreadHandle, 1);  //reset prio
+
+				xLastWakeTime = xTaskGetTickCount();
+				vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
+				localState = imu.readIMU();
+
+				xSemaphoreTake(xSharedStateMutex, (TickType_t)1);
+					sharedState = localState;			//load the latest IMU sample into the
+				xSemaphoreGive(xSharedStateMutex);		//shared variable
+
+
+				vTaskPrioritySet(xControllerThreadHandle, 2); //raise prio of controller
+															  //thread
+			}break;
 		}
 	}
-
-	//inf sensor polling loop, runs at 1 kHz
-	while(1){
-
-		xLastWakeTime = xTaskGetTickCount();
-		vTaskDelayUntil(&xLastWakeTime, xFrequency); //blocks
-
-		localState = imu.readIMU();
-
-		xSemaphoreTake(xSharedStateMutex, (TickType_t) 0);
-		sharedState = localState;
-		xSemaphoreGive(xSharedStateMutex);
-
-	}
-
 }
 
 void controllerThread(void* pvParameters){
 
+	//state machine definitions
+	enum controllerThreadState{
+		INIT,
+		READY,
+		ACTIVE
+	};
+	controllerThreadState threadState = INIT;
 
-	control::PI thrustController = control::PI(0, 0.1, 10, 2);
-	control::PI yawController = control::PI(0, 0.1, 10, 2);
-	control::PI rollController = control::PI(0, 0.1, 10, 2);
-	control::PI pitchController = control::PI(0, 0.1, 10, 2);
+	//controller initialization
+	control::PI thrustController = control::PI(0, 0.01, 1.4 , 0.01);
+	control::PI yawController = control::PI(180, 0.01, 1.4, 0.01);
+	control::PI rollController = control::PI(0, 0.01, 1.4, 0.01);
+	control::PI pitchController = control::PI(0, 0.01, 1.4, 0.01);
 
+	//var for IMU samples (State) and controller output (Actions)
 	state::QuadStateVector localState;
 	state::QuadControlActions localActions;
 
-	const TickType_t xFrequency = 1000;
+	//RTOS timing control vars
+	const TickType_t xFrequency = 10;
 	TickType_t xLastWakeTime;
 
-
-	xSemaphoreTake(xInitializerMutex, xFrequency); //needs to get this mutex to continue exec
-												  //cannot grab this until other initialization is done
-	//controllers do not need initialization
-
-	xSemaphoreGive(xInitializerMutex); //proceed into inf loop now that initialization is done
-
-
-	//inf controller calculation loop, runs at 1kHz
+	//main state machine
 	while(1){
-		xLastWakeTime = xTaskGetTickCount();
-		vTaskDelayUntil(&xLastWakeTime, xFrequency); //blocks than instantly returns
+		switch(threadState){
+		case INIT:
+		{
+			controllerInitFlag = true;
+			threadState = READY;
+		}break;
+		case READY:
+		{
+			if(sensorInitFlag && actuatorInitFlag){  //wait until other threads are ready
+				threadState = ACTIVE;				 //then move to active
+			}
+			else{
+				vTaskPrioritySet(xControllerThreadHandle, 0);  //lower prio
+				taskYIELD(); //if we are here then the other threads aren't ready; yield to them
+			}
 
-		xSemaphoreTake(xSharedStateMutex, (TickType_t) 0); //nonblocking
-		localState = sharedState;
-		xSemaphoreGive(xSharedStateMutex);
+		}break;
+		case ACTIVE:
+		{
+			vTaskPrioritySet(xControllerThreadHandle, 1);  //reset prio
 
+			xLastWakeTime = xTaskGetTickCount();			//timing control
+			vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-		localActions.u1 = thrustController.calcOutput(localState.z);
-		localActions.u2 = rollController.calcOutput(localState.psi);
-		localActions.u3 = pitchController.calcOutput(localState.theta);
-		localActions.u4 = yawController.calcOutput(localState.phi);
+			xSemaphoreTake(xSharedStateMutex, (TickType_t)1);
+				localState = sharedState;					//get the latest IMU sample
+			xSemaphoreGive(xSharedStateMutex);
 
-		xSemaphoreTake(xsharedActionsMutex, (TickType_t) 0);
-		sharedActions = localActions;
-		xSemaphoreGive(xsharedActionsMutex);
+			//calculate control outputs
+			localActions.u1 = thrustController.calcOutput(localState.dz);
+			localActions.u2 = rollController.calcOutput(localState.phi);
+			localActions.u3 = yawController.calcOutput(localState.psi);
+			localActions.u4 = pitchController.calcOutput(localState.theta);
 
+			xSemaphoreTake(xSharedActionsMutex, (TickType_t)1);
+				sharedActions = localActions;
+			xSemaphoreGive(xSharedActionsMutex);
 
+			vTaskPrioritySet(xActuatorThreadHandle, 2);  //raise prio of actuator thread
 
+		}break;
+		}
 	}
-
-
 }
 
 void actuatorThread(void* pvParameters){
 
+	enum actuatorThreadState{
+		INIT,
+		READY,
+		ACTIVE,
+		ESTOP
+	};
 
+	actuatorThreadState threadState = INIT;
+
+	int tID = 3;
 	state::QuadControlActions localOutput;
 	actuators::BLHelis motors(htim8);
 
-	const TickType_t xFrequency = 1000; //scheduler is running at 1Khz, this thread will be able to run at that freq too
+	const TickType_t xFrequency = 10; //scheduler is running at 1Khz, this thread will be able to run at that freq too
 	TickType_t xLastWakeTime;
-	bool obtainedInitFlag = pdFALSE;
-	while(!obtainedInitFlag){
-		if(obtainedInitFlag = xSemaphoreTake(xInitializerMutex, xFrequency) == pdTRUE){ //needs to get this mutex to continue exec
-				  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  	  //cannot grab this until initialization is done)
-			bool motorInit = false;
-			int state = 0;
-			while(!motorInit){
-				switch(state){
-				case 0:
-				{
-					//show the user that the motors are about to start up by flashing the LED
-					HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-					vTaskDelay(5000);
-					HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
-					vTaskDelay(5000);
 
-					state = 1;
-				}break;
-				case 1:
-				{
-					motors.initMotors();
-					motorInit = true;
-				}
-				}
+
+	while(1){
+		switch(threadState){
+		case INIT:
+		{
+			//signal the approaching throttle
+			HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+			vTaskDelay(5000);
+			HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);
+			vTaskDelay(5000);
+			motors.initMotors();
+			actuatorInitFlag = true;
+			threadState = READY;
+
+		}break;
+		case READY:
+		{
+			if(sensorInitFlag && actuatorInitFlag){
+				threadState = ACTIVE;
+			}
+			else{
+				vTaskPrioritySet(xActuatorThreadHandle, 0);  //lower prio
+				taskYIELD(); //if the other threads aren't ready, yield to them
 			}
 
+		}break;
+		case ACTIVE:
+		{
+			vTaskPrioritySet(xActuatorThreadHandle, 1);  //reset prio
 
-			xSemaphoreGive(xInitializerMutex);
+			HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //visually show the thread running
+
+			//main task to be handled by the RTOS
+			xLastWakeTime = xTaskGetTickCount();
+			vTaskDelayUntil(&xLastWakeTime, xFrequency); //blocks
+
+			xSemaphoreTake(xSharedActionsMutex, (TickType_t)1);
+				localOutput = sharedActions;
+				xSemaphoreTake(xSharedRecordMutex, 0);
+					writeToThreadRecord(tID);
+				xSemaphoreGive(xSharedRecordMutex);
+			xSemaphoreGive(xSharedActionsMutex);
+
+			motors.actuateMotors(localOutput);
+
+			vTaskPrioritySet(xSensorThreadHandle, 2);  //raise prio of sensor s.t. it will read new values
+
+
+		}break;
 		}
 	}
-
-	//inf motor control loop, runs at 1kHz
-	while(1){
-
-		xLastWakeTime = xTaskGetTickCount();
-		vTaskDelayUntil(&xLastWakeTime, xFrequency); //blocks
-
-		xSemaphoreTake(xsharedActionsMutex, (TickType_t)0);
-		localOutput = sharedActions;
-		xSemaphoreGive(xsharedActionsMutex);
-
-		motors.actuateMotors(localOutput);
-	}
-
 }
 
 
@@ -350,6 +422,41 @@ void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName){
 	while(1){};
 }
 
+
+float zmovingAverage(float newElem){
+	static int nextIdx = 0;
+	static float avg = 0.0;
+	float oldElem = movAvg[nextIdx];
+	movAvg[nextIdx % MOVING_AVERAGE_SIZE] = newElem;
+	avg += ((movAvg[nextIdx % MOVING_AVERAGE_SIZE] - oldElem) / MOVING_AVERAGE_SIZE);
+	nextIdx = (nextIdx + 1) % MOVING_AVERAGE_SIZE;
+	return avg;
+}
+
+float phimovingAverage(float newElem){
+	static int nextIdx = 0;
+	static float avg = 0.0;
+	float oldElem = movAvg[nextIdx];
+	movAvg[nextIdx % MOVING_AVERAGE_SIZE] = newElem;
+	avg += ((movAvg[nextIdx % MOVING_AVERAGE_SIZE] - oldElem) / MOVING_AVERAGE_SIZE);
+	nextIdx = (nextIdx + 1) % MOVING_AVERAGE_SIZE;
+	return avg;
+}
+
+float thetamovingAverage(float newElem){
+	static int nextIdx = 0;
+	static float avg = 0.0;
+	float oldElem = movAvg[nextIdx];
+	movAvg[nextIdx % MOVING_AVERAGE_SIZE] = newElem;
+	avg += ((movAvg[nextIdx % MOVING_AVERAGE_SIZE] - oldElem) / MOVING_AVERAGE_SIZE);
+	nextIdx = (nextIdx + 1) % MOVING_AVERAGE_SIZE;
+	return avg;
+}
+
+TickType_t HAL_GetTick(void)
+{
+  return xTaskGetTickCount();
+}
 
 /**
   * @brief System Clock Configuration

@@ -65,13 +65,42 @@
 #define BNO055_GYR_OFFSET_Z_LSB_R 0x65
 #define BNO055_GYR_OFFSET_Z_MSB_R 0x66
 
+//mag offsets
+#define BNO055_MAG_OFFSET_X_LSB_R 0x5B
+#define BNO055_MAG_OFFSET_X_MSB_R 0x5C
+#define BNO055_MAG_OFFSET_Y_LSB_R 0x5D
+#define BNO055_MAG_OFFSET_Y_MSB_R 0x5E
+#define BNO055_MAG_OFFSET_Z_LSB_R 0x5F
+#define BNO055_MAG_OFFSET_Z_MSB_R 0x60
+
+//radius configuration registers
+#define BNO055_ACC_RADIUS_LSB_R 0x67
+#define BNO055_ACC_RADIUS_MSB_R 0x68
+#define BNO055_MAG_RADIUS_LSB_R 0x69
+#define BNO055_MAG_RADIUS_MSB_R 0x6A
+
+//absolute orientation
+#define BNO055_EUL_PITCH_MSB_R 0x1F
+#define BNO055_EUL_PITCH_LSB_R 0x1E
+#define BNO055_EUL_ROLL_MSB_R 0x1D
+#define BNO055_EUL_ROLL_LSB_R 0x1C
+#define BNO055_EUL_HEADING_MSB_R 0x1B
+#define BNO055_EUL_HEADING_LSB_R 0x1A
+
+//absolute accels
+#define BNO055_LIA_DATA_Z_MSB_R 0x2D
+#define BNO055_LIA_DATA_Z_LSB_R 0x2C
+
 //value defines
 #define IMU_OP_MODE 0x08
+#define NDOF_MODE 0x0C
 #define IMU_FULL_CALIB 0x3C
+#define NDOF_FULL_CALIB 0x3F
 
 //scale defines
 #define ACC_SCALE 100 //100 LSB = 1 m/s^2
 #define GYR_SCALE 16 //16 LSB = 1 deg/s
+#define EUL_SCALE 16 //16 LSB = 1 deg
 
 namespace sensors{
 
@@ -79,13 +108,13 @@ class BNO055 : IMU{
 public:
 	BNO055(I2C_HandleTypeDef& rhi2c1);
 	bool configSensor(void);
-	bool readImuCalibStatus(void);
-	bool Write_IMU_Calib_Params(void);
-	bool Read_Calib_Params(void);
+	bool readCalibStatus(void);
 	state::QuadStateVector& readIMU(void);
 private:
 	I2C_HandleTypeDef& i2c;
-	void I2C1_ClearBusyFlagErratum(void);
+	bool writeCalibParams(void);
+	bool readCalibParams(void);
+	void clearBusyFlagErratum(void);
 };
 
 }

@@ -26,12 +26,12 @@ float PI::calcOutput(float stateEstimate){
 
 		error = this->setpoint - stateEstimate;
 		ierror += this->dt * error;
-		if(ierror > 10){
-			ierror = 10;
-		}
-		else if(ierror < -10){
-			ierror = -10;
-		}
+//		if(ierror > 100){
+//			ierror = 100;
+//		}
+//		else if(ierror < -100){
+//			ierror = -100;
+//		}
 		return (this->Kp * error + this->Ki * ierror);
 }
 

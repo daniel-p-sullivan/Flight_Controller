@@ -7,7 +7,6 @@
 
 
 #include "blhelis.hpp"
-#include "../state/state.hpp"
 
 namespace actuators{
 
@@ -25,18 +24,18 @@ void BLHelis::initMotors(void){
 	static uint16_t mc1 = 0;
 	static uint16_t step_count = 1000;
 	static uint8_t delay = 1;
-	float step = (mc1_h - mc1_l) / step_count;
+	float step = ((float)mc1_h - (float)mc1_l) / (float)step_count;
 
 	motor_sp msp;
 
-	for(uint16_t i = 0; i < (step_count/2); i++){
-		mc1 = mc1_l + i * (int)step;
+	for(float i = 0; i < (step_count); i++){
+		mc1 = mc1_l + (int)(i * step);
 		msp = {mc1, mc1, mc1, mc1};
 		this->Update_Motor_SP(msp);
 		vTaskDelay(delay);
 	}
-	for(uint16_t i = 0; i < (step_count/2); i++){
-		mc1 = mc1_h - i * (int)step;
+	for(float i = 0; i < (step_count); i++){
+		mc1 = mc1_h - (int)(i * step);
 		msp = {mc1, mc1, mc1, mc1};
 		this->Update_Motor_SP(msp);
 		vTaskDelay(delay);
@@ -44,7 +43,7 @@ void BLHelis::initMotors(void){
 	mc1 = mc1_l;
 	msp = {mc1, mc1, mc1, mc1};
 	this->Update_Motor_SP(msp);
-	vTaskDelay(2000);
+	vTaskDelay(10000);
 }
 
 void BLHelis::actuateMotors(state::QuadControlActions& ac){
@@ -52,15 +51,21 @@ void BLHelis::actuateMotors(state::QuadControlActions& ac){
 	static uint16_t m1_sp, m2_sp, m3_sp, m4_sp;
 
 	//mix the controller output
-	m1_sp = ac.u1 + ac.u2 + ac.u3 + ac.u4;
-	m2_sp = ac.u1 - ac.u2 + ac.u3 - ac.u4;
-	m3_sp = ac.u1 + ac.u2 - ac.u3 - ac.u4;
-	m4_sp = ac.u1 - ac.u2 - ac.u3 + ac.u4;
+	m1_sp = (uint16_t)std::max((int16_t)MOTOR_IDLE, (int16_t)((float)MOTOR_IDLE + ac.u1 - ac.u2 - ac.u3 + ac.u4));
+	m2_sp = (uint16_t)std::max((int16_t)MOTOR_IDLE, (int16_t)((float)MOTOR_IDLE + ac.u1 + ac.u2 - ac.u3 - ac.u4));
+	m3_sp = (uint16_t)std::max((int16_t)MOTOR_IDLE, (int16_t)((float)MOTOR_IDLE + ac.u1 - ac.u2 + ac.u3 - ac.u4));
+	m4_sp = (uint16_t)std::max((int16_t)MOTOR_IDLE, (int16_t)((float)MOTOR_IDLE + ac.u1 + ac.u2 + ac.u3 + ac.u4));
 
-	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_1, m1_sp);
-	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_2, m2_sp);
-	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_3, m3_sp);
-	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_4, m4_sp);
+	//ensure that the motors are not too fast
+	m1_sp = std::min(m1_sp, (uint16_t)MOTOR_13MS);
+	m2_sp = std::min(m2_sp, (uint16_t)MOTOR_13MS);
+	m3_sp = std::min(m3_sp, (uint16_t)MOTOR_13MS);
+	m4_sp = std::min(m4_sp, (uint16_t)MOTOR_13MS);
+
+	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_1, (uint16_t)m1_sp);
+	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_2, (uint16_t)m2_sp);
+	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_3, (uint16_t)m3_sp);
+	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_4, (uint16_t)m4_sp);
 }
 
 
