@@ -12,7 +12,6 @@
 
 namespace state{
 
-
 struct QuadStateVector{
 	float phi;
 	float dphi;
@@ -28,6 +27,19 @@ struct QuadStateVector{
 	float dz;
 };
 
+
+struct QuadControlActions{
+	float u1;
+	float u2;
+	float u3;
+	float u4;
+};
+
+
+
+
+
+
 struct QuadStateDerivVector{
 	float dphi;
 	float ddphi;
@@ -42,14 +54,6 @@ struct QuadStateDerivVector{
 	float dz;
 	float ddz;
 };
-
-struct QuadControlActions{
-	float u1;
-	float u2;
-	float u3;
-	float u4;
-};
-
 
 
 

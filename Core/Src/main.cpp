@@ -49,7 +49,7 @@
 /* Private macro -------------------------------------------------------------*/
 /* USER CODE BEGIN PM */
 #define MOVING_AVERAGE_SIZE 5
-#define RECORD_SIZE 4000
+#define RECORD_SIZE 500
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
@@ -81,7 +81,12 @@ controllerThreadArgs controllerArgs;
 actuatorThreadArgs actuatorArgs;
 sensorThreadArgs sensorArgs;
 
-int threadRecord[RECORD_SIZE];
+//records
+float azRecord[RECORD_SIZE];
+float pRecord[RECORD_SIZE];
+float rRecord[RECORD_SIZE];
+float hRecord[RECORD_SIZE];
+
 
 //thread handles and creation retvar
 TaskHandle_t xSensorThreadHandle;
@@ -115,6 +120,7 @@ float phimovingAverage(float newElem);
 float thetamovingAverage(float newElem);
 static float movAvg[MOVING_AVERAGE_SIZE];
 void writeToThreadRecord(int tID);
+void recordImuSample(state::QuadStateVector& currState);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -210,7 +216,6 @@ void sensorThread(void* pvParameters){
 
 	sensorThreadState threadState = INIT;
 
-	int tID = 1;
 	state::QuadStateVector localState;
 	sensors::BNO055 imu(hi2c1);
 
@@ -227,7 +232,7 @@ void sensorThread(void* pvParameters){
 
 				if(imuConfigFlag){
 					sensorInitFlag = true;
-					threadState = READY; //skipping calib for now since we write a stored profile
+					threadState = CALIB;
 				}
 			}break;
 			case CALIB:
@@ -260,6 +265,7 @@ void sensorThread(void* pvParameters){
 				vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
 				localState = imu.readIMU();
+				recordImuSample(localState);
 
 				xSemaphoreTake(xSharedStateMutex, (TickType_t)1);
 					sharedState = localState;			//load the latest IMU sample into the
@@ -284,10 +290,11 @@ void controllerThread(void* pvParameters){
 	controllerThreadState threadState = INIT;
 
 	//controller initialization
-	control::PI thrustController = control::PI(0, 0.01, 1.4 , 0.01);
+	control::PI thrustController = control::PI(0, 0.01, 5, 0);
 	control::PI yawController = control::PI(180, 0.01, 1.4, 0.01);
-	control::PI rollController = control::PI(0, 0.01, 1.4, 0.01);
-	control::PI pitchController = control::PI(0, 0.01, 1.4, 0.01);
+	control::PI rollController = control::PI(0, 0.01, 2.421, 0.02);
+	control::PI pitchController = control::PI(0, 0.01, 2.18, 3);
+	//pitch Ku found at gain 4.84375, period 0.57s
 
 	//var for IMU samples (State) and controller output (Actions)
 	state::QuadStateVector localState;
@@ -328,9 +335,10 @@ void controllerThread(void* pvParameters){
 			xSemaphoreGive(xSharedStateMutex);
 
 			//calculate control outputs
-			localActions.u1 = thrustController.calcOutput(localState.dz);
-			localActions.u2 = rollController.calcOutput(localState.phi);
-			localActions.u3 = yawController.calcOutput(localState.psi);
+			float zma = zmovingAverage(localState.dz);
+			localActions.u1 = 0.0;//thrustController.calcOutput(zma);
+			localActions.u2 = 0.0;//rollController.calcOutput(localState.phi);
+			localActions.u3 = 0.0;//yawController.calcOutput(localState.psi);
 			localActions.u4 = pitchController.calcOutput(localState.theta);
 
 			xSemaphoreTake(xSharedActionsMutex, (TickType_t)1);
@@ -355,7 +363,6 @@ void actuatorThread(void* pvParameters){
 
 	actuatorThreadState threadState = INIT;
 
-	int tID = 3;
 	state::QuadControlActions localOutput;
 	actuators::BLHelis motors(htim8);
 
@@ -400,9 +407,6 @@ void actuatorThread(void* pvParameters){
 
 			xSemaphoreTake(xSharedActionsMutex, (TickType_t)1);
 				localOutput = sharedActions;
-				xSemaphoreTake(xSharedRecordMutex, 0);
-					writeToThreadRecord(tID);
-				xSemaphoreGive(xSharedRecordMutex);
 			xSemaphoreGive(xSharedActionsMutex);
 
 			motors.actuateMotors(localOutput);
@@ -420,6 +424,16 @@ void actuatorThread(void* pvParameters){
 /*stack overflow checking*/
 void vApplicationStackOverFlowHook(TaskHandle_t xTask, signed char *pcTaskName){
 	while(1){};
+}
+
+//flight recording
+void recordImuSample(state::QuadStateVector& currState){
+	static int currIdx = 0;
+	azRecord[currIdx] = currState.dz;
+	pRecord[currIdx] = currState.theta;
+	hRecord[currIdx] = currState.psi;
+	rRecord[currIdx] = currState.phi;
+	currIdx = (currIdx + 1) % RECORD_SIZE;
 }
 
 

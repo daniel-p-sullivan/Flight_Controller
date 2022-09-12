@@ -19,6 +19,7 @@
 #define MOTOR_IDLE_2
 #define MOTOR_1MS 3120
 #define MOTOR_11MS 3432
+#define MOTOR_BASEMS 3627
 #define MOTOR_12MS 3744
 #define MOTOR_2MS 6242
 #define MOTOR_15MS 4680
@@ -31,7 +32,6 @@ public:
 	BLHelis(TIM_HandleTypeDef& htim8);
 	void actuateMotors(state::QuadControlActions& ac);
 	void initMotors(void);
-private:
 	TIM_HandleTypeDef& timer;
 	void Start(void);
 	void Set_Thrust_Percent(float *percent);

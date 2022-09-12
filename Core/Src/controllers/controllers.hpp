@@ -12,6 +12,8 @@
 #include "../sensors/sensors.hpp"
 #include "../state/state.hpp"
 
+#define INTEGRAL_WINDUP_MAX 200
+#define INTEGRAL_WINDUP_MIN -200
 
 namespace control{
 

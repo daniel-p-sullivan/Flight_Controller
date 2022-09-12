@@ -13,33 +13,40 @@
 
 namespace control{
 
-PI::PI(float sp, float dt, float Kp, float Ki){
-		this->setpoint = sp;
-		this->dt = dt;
-		this->Kp = Kp;
-		this->Ki = Ki;
-}
+PI::PI(float sp, float dt, float Kp, float Ki) :
+		setpoint(sp), dt(dt), Kp(Kp), Ki(Ki){}
 
 float PI::calcOutput(float stateEstimate){
 		static float error = 0;
 		static float ierror = 0;
 
-		error = this->setpoint - stateEstimate;
-		ierror += this->dt * error;
-//		if(ierror > 100){
-//			ierror = 100;
-//		}
-//		else if(ierror < -100){
-//			ierror = -100;
-//		}
-		return (this->Kp * error + this->Ki * ierror);
+		error = setpoint - stateEstimate;
+		ierror += dt * error;
+		if(ierror > INTEGRAL_WINDUP_MAX){
+			ierror = INTEGRAL_WINDUP_MAX;
+		}
+		else if(ierror < INTEGRAL_WINDUP_MIN){
+			ierror = INTEGRAL_WINDUP_MIN;
+		}
+		return (Kp * error + Ki * ierror);
+}
 }
 
 
 
 
 
-}
+
+
+
+
+
+
+
+
+
+
+
 
 
 

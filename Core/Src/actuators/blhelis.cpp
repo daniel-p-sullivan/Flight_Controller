@@ -51,16 +51,16 @@ void BLHelis::actuateMotors(state::QuadControlActions& ac){
 	static uint16_t m1_sp, m2_sp, m3_sp, m4_sp;
 
 	//mix the controller output
-	m1_sp = (uint16_t)std::max((int16_t)MOTOR_IDLE, (int16_t)((float)MOTOR_IDLE + ac.u1 - ac.u2 - ac.u3 + ac.u4));
-	m2_sp = (uint16_t)std::max((int16_t)MOTOR_IDLE, (int16_t)((float)MOTOR_IDLE + ac.u1 + ac.u2 - ac.u3 - ac.u4));
-	m3_sp = (uint16_t)std::max((int16_t)MOTOR_IDLE, (int16_t)((float)MOTOR_IDLE + ac.u1 - ac.u2 + ac.u3 - ac.u4));
-	m4_sp = (uint16_t)std::max((int16_t)MOTOR_IDLE, (int16_t)((float)MOTOR_IDLE + ac.u1 + ac.u2 + ac.u3 + ac.u4));
+	m1_sp = (uint16_t)std::max((int16_t)MOTOR_BASEMS, (int16_t)((float)MOTOR_BASEMS + ac.u1 - ac.u2 - ac.u3 + ac.u4));
+	m2_sp = (uint16_t)std::max((int16_t)MOTOR_BASEMS, (int16_t)((float)MOTOR_BASEMS + ac.u1 + ac.u2 + ac.u3 + ac.u4));
+	m3_sp = (uint16_t)std::max((int16_t)MOTOR_BASEMS, (int16_t)((float)MOTOR_BASEMS + ac.u1 - ac.u2 + ac.u3 - ac.u4));
+	m4_sp = (uint16_t)std::max((int16_t)MOTOR_BASEMS, (int16_t)((float)MOTOR_BASEMS + ac.u1 + ac.u2 - ac.u3 - ac.u4));
 
 	//ensure that the motors are not too fast
-	m1_sp = std::min(m1_sp, (uint16_t)MOTOR_13MS);
-	m2_sp = std::min(m2_sp, (uint16_t)MOTOR_13MS);
-	m3_sp = std::min(m3_sp, (uint16_t)MOTOR_13MS);
-	m4_sp = std::min(m4_sp, (uint16_t)MOTOR_13MS);
+	m1_sp = std::min(m1_sp, (uint16_t)MOTOR_15MS);
+	m2_sp = std::min(m2_sp, (uint16_t)MOTOR_15MS);
+	m3_sp = std::min(m3_sp, (uint16_t)MOTOR_15MS);
+	m4_sp = std::min(m4_sp, (uint16_t)MOTOR_15MS);
 
 	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_1, (uint16_t)m1_sp);
 	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_2, (uint16_t)m2_sp);
@@ -70,17 +70,17 @@ void BLHelis::actuateMotors(state::QuadControlActions& ac){
 
 
 void BLHelis::Actuate_Motor_1(void){
-	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_1, MOTOR_IDLE);
+	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_1, MOTOR_11MS);
 }
 
 void BLHelis::Actuate_Motor_2(void){
-	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_2, MOTOR_IDLE);
+	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_2, MOTOR_11MS);
 }
 void BLHelis::Actuate_Motor_3(void){
-	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_3, MOTOR_IDLE);
+	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_3, MOTOR_11MS);
 }
 void BLHelis::Actuate_Motor_4(void){
-	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_4, MOTOR_IDLE);
+	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_4, MOTOR_11MS);
 }
 
 void BLHelis::Start(void){
