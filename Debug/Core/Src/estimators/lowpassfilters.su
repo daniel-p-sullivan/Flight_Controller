@@ -1,0 +1,2 @@
+../Core/Src/estimators/lowpassfilters.cpp:13:1:estimators::MovingAverageFilter::MovingAverageFilter(int)	16	static
+../Core/Src/estimators/lowpassfilters.cpp:16:7:float estimators::MovingAverageFilter::filter(float)	16	static

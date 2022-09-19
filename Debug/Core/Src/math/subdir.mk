@@ -5,12 +5,18 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
+../Core/Src/math/differentiators.cpp \
+../Core/Src/math/integrators.cpp \
 ../Core/Src/math/transformers.cpp 
 
 OBJS += \
+./Core/Src/math/differentiators.o \
+./Core/Src/math/integrators.o \
 ./Core/Src/math/transformers.o 
 
 CPP_DEPS += \
+./Core/Src/math/differentiators.d \
+./Core/Src/math/integrators.d \
 ./Core/Src/math/transformers.d 
 
 
@@ -21,7 +27,7 @@ Core/Src/math/%.o Core/Src/math/%.su: ../Core/Src/math/%.cpp Core/Src/math/subdi
 clean: clean-Core-2f-Src-2f-math
 
 clean-Core-2f-Src-2f-math:
-	-$(RM) ./Core/Src/math/transformers.d ./Core/Src/math/transformers.o ./Core/Src/math/transformers.su
+	-$(RM) ./Core/Src/math/differentiators.d ./Core/Src/math/differentiators.o ./Core/Src/math/differentiators.su ./Core/Src/math/integrators.d ./Core/Src/math/integrators.o ./Core/Src/math/integrators.su ./Core/Src/math/transformers.d ./Core/Src/math/transformers.o ./Core/Src/math/transformers.su
 
 .PHONY: clean-Core-2f-Src-2f-math
 

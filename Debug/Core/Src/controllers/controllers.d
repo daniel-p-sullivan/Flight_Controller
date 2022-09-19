@@ -37,6 +37,8 @@ Core/Src/controllers/controllers.o: \
  ../Core/Src/controllers/../sensors/sensors.hpp \
  ../Core/Src/controllers/../sensors/../state/state.hpp \
  ../Core/Src/controllers/../state/state.hpp \
+ ../Core/Src/controllers/../math/integrators.hpp \
+ ../Core/Src/controllers/../math/differentiators.hpp \
  ../Core/Src/controllers/../state/trajectories.hpp \
  ../Core/Src/controllers/../state/state.hpp \
  ../Core/Src/controllers/../model/models.hpp \
@@ -79,6 +81,8 @@ Core/Src/controllers/controllers.o: \
 ../Core/Src/controllers/../sensors/sensors.hpp:
 ../Core/Src/controllers/../sensors/../state/state.hpp:
 ../Core/Src/controllers/../state/state.hpp:
+../Core/Src/controllers/../math/integrators.hpp:
+../Core/Src/controllers/../math/differentiators.hpp:
 ../Core/Src/controllers/../state/trajectories.hpp:
 ../Core/Src/controllers/../state/state.hpp:
 ../Core/Src/controllers/../model/models.hpp:

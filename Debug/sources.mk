@@ -34,6 +34,7 @@ SUBDIRS := \
 Core/Src/actuators \
 Core/Src/comms \
 Core/Src/controllers \
+Core/Src/estimators \
 Core/Src \
 Core/Src/math \
 Core/Src/model \

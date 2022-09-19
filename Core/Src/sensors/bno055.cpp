@@ -202,8 +202,8 @@ state::QuadStateVector& BNO055::readIMU(void){
 	static HAL_StatusTypeDef hal_status;
 
 
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Z_LSB_R, 1, &az_lsb, 1, 25);
-	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_ACC_DATA_Z_MSB_R, 1, &az_msb, 1, 25);
+	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_LIA_DATA_Z_LSB_R, 1, &az_lsb, 1, 25);
+	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_LIA_DATA_Z_MSB_R, 1, &az_msb, 1, 25);
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_EUL_PITCH_LSB_R, 1, &p_lsb, 1, 25);
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_EUL_PITCH_MSB_R, 1, &p_msb, 1, 25);
 	hal_status = HAL_I2C_Mem_Read(&(this->i2c), (BNO055_ADDRESS<<1), BNO055_EUL_ROLL_LSB_R, 1, &r_lsb, 1, 25);

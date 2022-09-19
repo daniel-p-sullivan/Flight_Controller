@@ -1,0 +1,2 @@
+../Core/Src/math/differentiators.cpp:12:1:math::BackwardsDifferentiator::BackwardsDifferentiator(float)	16	static
+../Core/Src/math/differentiators.cpp:15:7:float math::BackwardsDifferentiator::differentiate(float)	24	static

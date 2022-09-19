@@ -55,12 +55,17 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
  ../Core/Src/./comms/../controllers/../sensors/sensors.hpp \
  ../Core/Src/./comms/../controllers/../sensors/../state/state.hpp \
  ../Core/Src/./comms/../controllers/../state/state.hpp \
+ ../Core/Src/./comms/../controllers/../math/integrators.hpp \
+ ../Core/Src/./comms/../controllers/../math/differentiators.hpp \
  ../Core/Src/./controllers/controllers.hpp \
  ../Core/Src/./sensors/sensors.hpp ../Core/Src/./actuators/blhelis.hpp \
  ../Core/Src/./actuators/actuators.hpp ../Core/Src/./sensors/bno055.hpp \
  ../Core/Src/./sensors/sensors.hpp \
  ../Core/Src/./sensors/../state/state.hpp ../Core/Src/./comms/nrf24.hpp \
- ../Core/Src/./comms/communications.hpp
+ ../Core/Src/./comms/communications.hpp \
+ ../Core/Src/./estimators/lowpassfilters.hpp \
+ ../Core/Src/./math/differentiators.hpp \
+ ../Core/Src/./math/integrators.hpp
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
@@ -118,6 +123,8 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Core/Src/./comms/../controllers/../sensors/sensors.hpp:
 ../Core/Src/./comms/../controllers/../sensors/../state/state.hpp:
 ../Core/Src/./comms/../controllers/../state/state.hpp:
+../Core/Src/./comms/../controllers/../math/integrators.hpp:
+../Core/Src/./comms/../controllers/../math/differentiators.hpp:
 ../Core/Src/./controllers/controllers.hpp:
 ../Core/Src/./sensors/sensors.hpp:
 ../Core/Src/./actuators/blhelis.hpp:
@@ -127,3 +134,6 @@ Core/Src/main.o: ../Core/Src/main.cpp ../Core/Inc/main.h \
 ../Core/Src/./sensors/../state/state.hpp:
 ../Core/Src/./comms/nrf24.hpp:
 ../Core/Src/./comms/communications.hpp:
+../Core/Src/./estimators/lowpassfilters.hpp:
+../Core/Src/./math/differentiators.hpp:
+../Core/Src/./math/integrators.hpp:

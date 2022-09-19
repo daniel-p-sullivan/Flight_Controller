@@ -57,10 +57,14 @@ void BLHelis::actuateMotors(state::QuadControlActions& ac){
 	m4_sp = (uint16_t)std::max((int16_t)MOTOR_BASEMS, (int16_t)((float)MOTOR_BASEMS + ac.u1 + ac.u2 - ac.u3 - ac.u4));
 
 	//ensure that the motors are not too fast
-	m1_sp = std::min(m1_sp, (uint16_t)MOTOR_15MS);
-	m2_sp = std::min(m2_sp, (uint16_t)MOTOR_15MS);
-	m3_sp = std::min(m3_sp, (uint16_t)MOTOR_15MS);
-	m4_sp = std::min(m4_sp, (uint16_t)MOTOR_15MS);
+	m1_sp = std::min(m1_sp, (uint16_t)MOTOR_175MS);
+	m2_sp = std::min(m2_sp, (uint16_t)MOTOR_175MS);
+	m3_sp = std::min(m3_sp, (uint16_t)MOTOR_175MS);
+	m4_sp = std::min(m4_sp, (uint16_t)MOTOR_175MS);
+
+	if(m1_sp == MOTOR_175MS || m2_sp == MOTOR_175MS || m3_sp == MOTOR_175MS || m4_sp == MOTOR_175MS){
+		HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin);  //show that you're maxing out
+	}
 
 	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_1, (uint16_t)m1_sp);
 	__HAL_TIM_SET_COMPARE(&(this->timer), TIM_CHANNEL_2, (uint16_t)m2_sp);

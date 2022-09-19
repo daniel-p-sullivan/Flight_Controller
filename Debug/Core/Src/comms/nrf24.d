@@ -37,6 +37,8 @@ Core/Src/comms/nrf24.o: ../Core/Src/comms/nrf24.cpp \
  ../Core/Src/comms/../controllers/../sensors/sensors.hpp \
  ../Core/Src/comms/../controllers/../sensors/../state/state.hpp \
  ../Core/Src/comms/../controllers/../state/state.hpp \
+ ../Core/Src/comms/../controllers/../math/integrators.hpp \
+ ../Core/Src/comms/../controllers/../math/differentiators.hpp \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h \
  ../Core/Inc/FreeRTOSConfig.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h \
@@ -94,6 +96,8 @@ Core/Src/comms/nrf24.o: ../Core/Src/comms/nrf24.cpp \
 ../Core/Src/comms/../controllers/../sensors/sensors.hpp:
 ../Core/Src/comms/../controllers/../sensors/../state/state.hpp:
 ../Core/Src/comms/../controllers/../state/state.hpp:
+../Core/Src/comms/../controllers/../math/integrators.hpp:
+../Core/Src/comms/../controllers/../math/differentiators.hpp:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/FreeRTOS.h:
 ../Core/Inc/FreeRTOSConfig.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/include/projdefs.h:

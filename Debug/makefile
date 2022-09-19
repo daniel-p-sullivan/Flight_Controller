@@ -19,6 +19,7 @@ RM := rm -rf
 -include Core/Src/sensors/subdir.mk
 -include Core/Src/model/subdir.mk
 -include Core/Src/math/subdir.mk
+-include Core/Src/estimators/subdir.mk
 -include Core/Src/controllers/subdir.mk
 -include Core/Src/comms/subdir.mk
 -include Core/Src/actuators/subdir.mk

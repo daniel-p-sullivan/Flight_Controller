@@ -23,6 +23,7 @@
 #define MOTOR_12MS 3744
 #define MOTOR_2MS 6242
 #define MOTOR_15MS 4680
+#define MOTOR_175MS 5462
 #define MOTOR_13MS 4056
 
 namespace actuators{

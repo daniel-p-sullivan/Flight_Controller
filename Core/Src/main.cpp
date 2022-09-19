@@ -34,6 +34,9 @@
 #include "./actuators/blhelis.hpp"
 #include "./sensors/bno055.hpp"
 #include "./comms/nrf24.hpp"
+#include "./estimators/lowpassfilters.hpp"
+#include "./math/differentiators.hpp"
+#include "./math/integrators.hpp"
 
 /* USER CODE END Includes */
 
@@ -290,11 +293,27 @@ void controllerThread(void* pvParameters){
 	controllerThreadState threadState = INIT;
 
 	//controller initialization
-	control::PI thrustController = control::PI(0, 0.01, 5, 0);
-	control::PI yawController = control::PI(180, 0.01, 1.4, 0.01);
-	control::PI rollController = control::PI(0, 0.01, 2.421, 0.02);
-	control::PI pitchController = control::PI(0, 0.01, 2.18, 3);
+	control::PID zController = control::PID(0, 0.01, 80, 5, 2);
+	control::PID yawController = control::PID(180, 0.01, 1.4, 0.01, 0.01);
+	control::PID rollController = control::PID(0, 0.01, 2.421, 0.02, 0.01);
+	control::PID pitchController = control::PID(0, 0.01, 2.421, 0.02, 0.01);
 	//pitch Ku found at gain 4.84375, period 0.57s
+
+	//filter initialization
+	int movingAverageSize = 5;
+	estimators::MovingAverageFilter rollFilter = estimators::MovingAverageFilter(movingAverageSize);
+	estimators::MovingAverageFilter pitchFilter = estimators::MovingAverageFilter(movingAverageSize);
+	estimators::MovingAverageFilter yawFilter = estimators::MovingAverageFilter(movingAverageSize);
+	estimators::MovingAverageFilter thrustFilter = estimators::MovingAverageFilter(movingAverageSize);
+	estimators::MovingAverageFilter zVelFilter = estimators::MovingAverageFilter(movingAverageSize);
+
+	//integrators
+	math::TrapezoidalIntegrator accToVelIntegrator = math::TrapezoidalIntegrator(0.01);
+	math::TrapezoidalIntegrator velToPosIntegrator = math::TrapezoidalIntegrator(0.01);
+
+	//offset for bno055 accel
+	bool firstSampleFlag = true;
+	float accOffset;
 
 	//var for IMU samples (State) and controller output (Actions)
 	state::QuadStateVector localState;
@@ -334,12 +353,30 @@ void controllerThread(void* pvParameters){
 				localState = sharedState;					//get the latest IMU sample
 			xSemaphoreGive(xSharedStateMutex);
 
+			//first sample getting acc offset
+			if(firstSampleFlag){
+				accOffset = localState.dz;
+				firstSampleFlag = false;
+			}
+
+			//filter the inputs
+			float rollFiltered, pitchFiltered, yawFiltered, thrustFiltered;
+			rollFiltered = rollFilter.filter(localState.phi);
+			pitchFiltered = pitchFilter.filter(localState.theta);
+			yawFiltered = yawFilter.filter(localState.psi);
+			thrustFiltered = thrustFilter.filter(localState.dz - accOffset);
+
+			//integrate accel to z pos
+			float zVel, zVelFiltered, zPos;
+			zVel = accToVelIntegrator.integrate(thrustFiltered);
+			zVelFiltered = zVelFilter.filter(zVel);
+			zPos = velToPosIntegrator.integrate(zVelFiltered);
+
 			//calculate control outputs
-			float zma = zmovingAverage(localState.dz);
-			localActions.u1 = 0.0;//thrustController.calcOutput(zma);
-			localActions.u2 = 0.0;//rollController.calcOutput(localState.phi);
-			localActions.u3 = 0.0;//yawController.calcOutput(localState.psi);
-			localActions.u4 = pitchController.calcOutput(localState.theta);
+			localActions.u1 = zController.calcOutput(zPos);
+			localActions.u2 = rollController.calcOutput(rollFiltered);
+			localActions.u3 = 0.0;//yawController.calcOutput(yawFiltered);
+			localActions.u4 = pitchController.calcOutput(pitchFiltered);
 
 			xSemaphoreTake(xSharedActionsMutex, (TickType_t)1);
 				sharedActions = localActions;
@@ -399,7 +436,7 @@ void actuatorThread(void* pvParameters){
 		{
 			vTaskPrioritySet(xActuatorThreadHandle, 1);  //reset prio
 
-			HAL_GPIO_TogglePin(LD2_GPIO_Port, LD2_Pin); //visually show the thread running
+
 
 			//main task to be handled by the RTOS
 			xLastWakeTime = xTaskGetTickCount();
